@@ -3,25 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Đặt xe tiện chuyến</title>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#f3f4f6;padding:20px}
-.container{max-width:650px;margin:auto;background:#fff;border-radius:15px;padding:25px;box-shadow:0 3px 15px rgba(0,0,0,.15)}
-h1{text-align:center;color:#0d6efd;margin-bottom:25px}
-h2{margin:25px 0 15px;color:#0d6efd}
-label{display:block;margin-top:15px;margin-bottom:5px;font-weight:bold}
-select,.txt{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:16px}
-button{width:100%;margin-top:20px;padding:14px;border:none;border-radius:8px;background:#0d6efd;color:#fff;font-size:18px;cursor:pointer}
-#ketqua{margin-top:20px}
-.card{background:#eef6ff;border-radius:10px;padding:15px}
-.dong{margin:8px 0;font-size:18px}
-.gia{color:red;font-size:26px;font-weight:bold}
-#thongBao{margin-top:15px;text-align:center;font-weight:bold}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f3f4f6;
+    padding:20px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 3px 15px rgba(0,0,0,.15);
+}
+
+h1{
+    text-align:center;
+    color:#0d6efd;
+    margin-bottom:25px;
+}
+
+h2{
+    color:#0d6efd;
+    margin:25px 0 15px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+select,
+input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    border:none;
+    border-radius:8px;
+    background:#0d6efd;
+    color:#fff;
+    font-size:18px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0b5ed7;
+}
+
+#ketqua{
+    margin-top:20px;
+}
+
+.card{
+    background:#eef6ff;
+    border-radius:10px;
+    padding:15px;
+}
+
+.dong{
+    margin:8px 0;
+    font-size:18px;
+}
+
+.gia{
+    color:red;
+    font-size:28px;
+    font-weight:bold;
+}
+
+#thongBao{
+    margin-top:15px;
+    text-align:center;
+    font-weight:bold;
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
+
 <h1>🚖 TRA CỨU GIÁ XE TIỆN CHUYẾN</h1>
 
 <label>Điểm đi</label>
@@ -30,7 +112,9 @@ button{width:100%;margin-top:20px;padding:14px;border:none;border-radius:8px;bac
 <label>Điểm đến</label>
 <select id="diemDen"></select>
 
-<button onclick="traCuu()">Tra cứu giá</button>
+<button onclick="traCuu()">
+Tra cứu giá
+</button>
 
 <div id="ketqua"></div>
 
@@ -38,113 +122,246 @@ button{width:100%;margin-top:20px;padding:14px;border:none;border-radius:8px;bac
 
 <h2>📝 ĐẶT XE</h2>
 
-<input type="text" id="hoTen" class="txt" placeholder="Họ và tên">
-<br><br>
-<input type="tel" id="sdt" class="txt" placeholder="Số điện thoại">
-<br><br>
-<input type="date" id="ngayDi" class="txt">
+<label>Họ và tên</label>
+<input type="text" id="hoTen">
 
-<button onclick="datXe()">🚖 Đặt xe ngay</button>
+<label>Số điện thoại</label>
+<input type="tel" id="sdt">
+
+<label>Ngày đi</label>
+<input type="date" id="ngayDi">
+
+<label>Giờ đi</label>
+<input type="time" id="gioDi">
+
+<button onclick="datXe()">
+🚖 Đặt xe ngay
+</button>
 
 <div id="thongBao"></div>
+
 </div>
 
 <script>
-const csvUrl="https://docs.google.com/spreadsheets/d/1ql2Aruz-GCF8lAInY-b_b72d74vazyhM2-wwSiCCNNQ/gviz/tq?tqx=out:csv";
-const scriptUrl="https://script.google.com/macros/s/AKfycby4v6G0suvi5jUrGj7FPovr6XQGx9TOcr6Z0tP29N-2RL7yfvBlFobzi-rCLfQO1tLs8Q/exec";
 
-let duLieu=[];
+// LINK CSV GOOGLE SHEET TUYẾN XE
+const csvUrl =
+"https://docs.google.com/spreadsheets/d/1ql2Aruz-GCF8lAInY-b_b72d74vazyhM2-wwSiCCNNQ/gviz/tq?tqx=out:csv";
+
+// LINK APPS SCRIPT
+const scriptUrl =
+"https://script.google.com/macros/s/AKfycby4v6G0suvi5jUrGj7FPovr6XQGx9TOcr6Z0tP29N-2RL7yfvBlFobzi-rCLfQO1tLs8Q/exec";
+
+let duLieu = [];
 
 async function loadData(){
- try{
-   const response=await fetch(csvUrl);
-   const text=await response.text();
-   const rows=text.trim().split("\\n");
-   duLieu=[];
 
-   rows.slice(1).forEach(row=>{
-      const cols=row.split(",").map(x=>x.replace(/"/g,"").trim());
-      if(cols[0]&&cols[1]){
-        duLieu.push({
-          diemDi:cols[0],
-          diemDen:cols[1],
-          km:cols[2],
-          gia:cols[3]
+    try{
+
+        const response = await fetch(csvUrl);
+        const text = await response.text();
+
+        const rows = text.trim().split("\n");
+
+        duLieu = [];
+
+        rows.slice(1).forEach(row=>{
+
+            const cols = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+
+            if(!cols || cols.length < 4) return;
+
+            duLieu.push({
+                diemDi: cols[0].replace(/"/g,"").trim(),
+                diemDen: cols[1].replace(/"/g,"").trim(),
+                km: cols[2].replace(/"/g,"").trim(),
+                gia: cols[3].replace(/"/g,"").trim()
+            });
+
         });
-      }
-   });
 
-   taoDanhSachDiaDiem();
- }catch(e){
-   document.getElementById("ketqua").innerHTML="Không tải được dữ liệu";
- }
+        taoDanhSachDiaDiem();
+
+    }catch(err){
+
+        document.getElementById("ketqua").innerHTML =
+        "<p style='color:red'>Không tải được dữ liệu.</p>";
+
+        console.error(err);
+
+    }
+
 }
 
 function taoDanhSachDiaDiem(){
- const ds=[...new Set(duLieu.flatMap(x=>[x.diemDi,x.diemDen]))].sort();
- const dd=document.getElementById("diemDi");
- const dn=document.getElementById("diemDen");
- dd.innerHTML="";
- dn.innerHTML="";
- ds.forEach(i=>{
-   dd.innerHTML+=`<option value="${i}">${i}</option>`;
-   dn.innerHTML+=`<option value="${i}">${i}</option>`;
- });
+
+    const ds = [
+        ...new Set(
+            duLieu.flatMap(x=>[
+                x.diemDi,
+                x.diemDen
+            ])
+        )
+    ];
+
+    ds.sort();
+
+    const diemDi =
+    document.getElementById("diemDi");
+
+    const diemDen =
+    document.getElementById("diemDen");
+
+    diemDi.innerHTML = "";
+    diemDen.innerHTML = "";
+
+    ds.forEach(item=>{
+
+        diemDi.innerHTML +=
+        `<option value="${item}">${item}</option>`;
+
+        diemDen.innerHTML +=
+        `<option value="${item}">${item}</option>`;
+
+    });
+
 }
 
 function traCuu(){
- const di=document.getElementById("diemDi").value;
- const den=document.getElementById("diemDen").value;
 
- const t=duLieu.find(x=>
-   (x.diemDi===di && x.diemDen===den) ||
-   (x.diemDi===den && x.diemDen===di)
- );
+    const di =
+    document.getElementById("diemDi").value;
 
- if(!t){
-   document.getElementById("ketqua").innerHTML="<h3 style='color:red'>Không tìm thấy tuyến xe</h3>";
-   return;
- }
+    const den =
+    document.getElementById("diemDen").value;
 
- const gia=Number(String(t.gia).replace(/,/g,""));
+    const tuyen = duLieu.find(x=>
 
- document.getElementById("ketqua").innerHTML=`
- <div class="card">
- <div class="dong">📍 Điểm đi: <b>${di}</b></div>
- <div class="dong">📍 Điểm đến: <b>${den}</b></div>
- <div class="dong">🛣️ Quãng đường: <b>${t.km} km</b></div>
- <div class="dong gia">💰 ${gia.toLocaleString("vi-VN")} đồng</div>
- </div>`;
+        (x.diemDi===di &&
+         x.diemDen===den)
+
+         ||
+
+        (x.diemDi===den &&
+         x.diemDen===di)
+
+    );
+
+    if(!tuyen){
+
+        document.getElementById("ketqua").innerHTML =
+        "<h3 style='color:red;text-align:center'>Không tìm thấy tuyến xe</h3>";
+
+        return;
+
+    }
+
+    const gia =
+    Number(
+        String(tuyen.gia)
+        .replace(/,/g,"")
+    );
+
+    document.getElementById("ketqua").innerHTML =
+
+    `<div class="card">
+
+        <div class="dong">
+        📍 Điểm đi:
+        <b>${di}</b>
+        </div>
+
+        <div class="dong">
+        📍 Điểm đến:
+        <b>${den}</b>
+        </div>
+
+        <div class="dong">
+        🛣️ Quãng đường:
+        <b>${tuyen.km} km</b>
+        </div>
+
+        <div class="dong gia">
+        💰 ${gia.toLocaleString("vi-VN")} đồng
+        </div>
+
+    </div>`;
+
 }
 
 async function datXe(){
- const hoTen=document.getElementById("hoTen").value.trim();
- const sdt=document.getElementById("sdt").value.trim();
- const ngayDi=document.getElementById("ngayDi").value;
- const diemDi=document.getElementById("diemDi").value;
- const diemDen=document.getElementById("diemDen").value;
 
- if(!hoTen||!sdt||!ngayDi){
-   alert("Vui lòng nhập đầy đủ thông tin");
-   return;
- }
+    const hoTen =
+    document.getElementById("hoTen").value.trim();
 
- try{
-   await fetch(scriptUrl,{
-     method:"POST",
-     body:JSON.stringify({hoTen,sdt,diemDi,diemDen,ngayDi})
-   });
+    const sdt =
+    document.getElementById("sdt").value.trim();
 
-   document.getElementById("thongBao").innerHTML="✅ Đặt xe thành công";
-   document.getElementById("hoTen").value="";
-   document.getElementById("sdt").value="";
-   document.getElementById("ngayDi").value="";
- }catch(e){
-   document.getElementById("thongBao").innerHTML="❌ Gửi thất bại";
- }
+    const ngayDi =
+    document.getElementById("ngayDi").value;
+
+    const gioDi =
+    document.getElementById("gioDi").value;
+
+    const diemDi =
+    document.getElementById("diemDi").value;
+
+    const diemDen =
+    document.getElementById("diemDen").value;
+
+    if(
+        !hoTen ||
+        !sdt ||
+        !ngayDi ||
+        !gioDi
+    ){
+        alert("Vui lòng nhập đầy đủ thông tin");
+        return;
+    }
+
+    document.getElementById("thongBao").innerHTML =
+    "⏳ Đang gửi yêu cầu...";
+
+    try{
+
+        await fetch(scriptUrl,{
+            method:"POST",
+            mode:"no-cors",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                hoTen,
+                sdt,
+                diemDi,
+                diemDen,
+                ngayDi,
+                gioDi
+            })
+        });
+
+        document.getElementById("thongBao").innerHTML =
+        "✅ Đặt xe thành công";
+
+        document.getElementById("hoTen").value="";
+        document.getElementById("sdt").value="";
+        document.getElementById("ngayDi").value="";
+        document.getElementById("gioDi").value="";
+
+    }catch(error){
+
+        document.getElementById("thongBao").innerHTML =
+        "❌ Gửi thất bại";
+
+        console.error(error);
+
+    }
+
 }
 
 loadData();
+
 </script>
+
 </body>
 </html>
