@@ -3,17 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tài xế - Đăng ký</title>
+<title>Tài xế</title>
 
 <style>
 body{font-family:Arial;background:#f3f4f6;padding:15px}
 .container{max-width:500px;margin:auto}
+
 .card{background:#fff;padding:15px;border-radius:12px;margin-top:15px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+
 input{width:100%;padding:12px;margin-top:10px;border:1px solid #ccc;border-radius:8px}
+
 button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;cursor:pointer}
-.reg{background:#0d6efd;color:#fff}
-.login{background:#198754;color:#fff}
+
+.loginBtn{background:#198754;color:#fff}
+.regBtn{background:#0d6efd;color:#fff}
+
+.link{
+  text-align:center;
+  margin-top:10px;
+  color:#0d6efd;
+  cursor:pointer;
+}
+
 h2{text-align:center;color:#0d6efd}
+
+.hidden{display:none}
 </style>
 </head>
 
@@ -23,19 +37,37 @@ h2{text-align:center;color:#0d6efd}
 
 <h2>🚖 TÀI XẾ</h2>
 
-<div class="card">
-<h3>Đăng ký</h3>
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+
+<h3>Đăng nhập</h3>
+
+<input id="sdtLogin" placeholder="Số điện thoại">
+<input id="passLogin" placeholder="Mật khẩu">
+
+<button class="loginBtn" onclick="login()">Đăng nhập</button>
+
+<div class="link" onclick="showRegister()">
+👉 Chưa có tài khoản? Đăng ký
+</div>
+
+</div>
+
+<!-- REGISTER -->
+<div class="card hidden" id="registerBox">
+
+<h3>Đăng ký tài xế</h3>
+
 <input id="hoTen" placeholder="Họ tên">
 <input id="sdt" placeholder="Số điện thoại">
 <input id="matKhau" placeholder="Mật khẩu">
-<button class="reg" onclick="register()">Đăng ký</button>
+
+<button class="regBtn" onclick="register()">Đăng ký</button>
+
+<div class="link" onclick="showLogin()">
+← Quay lại đăng nhập
 </div>
 
-<div class="card">
-<h3>Đăng nhập</h3>
-<input id="sdt2" placeholder="Số điện thoại">
-<input id="matKhau2" placeholder="Mật khẩu">
-<button class="login" onclick="login()">Đăng nhập</button>
 </div>
 
 <div id="msg"></div>
@@ -46,6 +78,18 @@ h2{text-align:center;color:#0d6efd}
 
 const API = "https://script.google.com/macros/s/AKfycby4v6G0suvi5jUrGj7FPovr6XQGx9TOcr6Z0tP29N-2RL7yfvBlFobzi-rCLfQO1tLs8Q/exec";
 
+// ================= UI SWITCH =================
+function showRegister(){
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("registerBox").classList.remove("hidden");
+}
+
+function showLogin(){
+  document.getElementById("registerBox").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+}
+
+// ================= REGISTER =================
 async function register(){
 
   const hoTen = document.getElementById("hoTen").value;
@@ -66,10 +110,11 @@ async function register(){
     data.success ? "✅ Đăng ký thành công" : "❌ Lỗi";
 }
 
+// ================= LOGIN =================
 async function login(){
 
-  const sdt = document.getElementById("sdt2").value;
-  const matKhau = document.getElementById("matKhau2").value;
+  const sdt = document.getElementById("sdtLogin").value;
+  const matKhau = document.getElementById("passLogin").value;
 
   const res = await fetch(API,{
     method:"POST",
@@ -87,7 +132,7 @@ async function login(){
 
     location.href = "laixe.html";
 
-  }else{
+  } else {
     alert("Sai tài khoản hoặc mật khẩu");
   }
 }
