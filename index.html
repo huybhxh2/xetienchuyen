@@ -47,7 +47,13 @@ label{
     color:#333;
 }
 
-select, input{
+/* Style cho input với autocomplete */
+.input-wrapper{
+    position:relative;
+    width:100%;
+}
+
+.input-wrapper input{
     width:100%;
     padding:12px;
     border:1px solid #ccc;
@@ -56,10 +62,37 @@ select, input{
     transition:0.2s;
 }
 
-select:focus, input:focus{
+.input-wrapper input:focus{
     border-color:#0d6efd;
     outline:none;
     box-shadow:0 0 0 2px rgba(13,110,253,0.2);
+}
+
+.autocomplete-list{
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    background:#fff;
+    border:1px solid #ccc;
+    border-top:none;
+    border-radius:0 0 8px 8px;
+    max-height:200px;
+    overflow-y:auto;
+    z-index:1000;
+    display:none;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.autocomplete-list div{
+    padding:10px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.autocomplete-list div:hover{
+    background:#0d6efd;
+    color:#fff;
 }
 
 button{
@@ -188,10 +221,16 @@ hr{
 <h1>🚖 TRA CỨU GIÁ XE</h1>
 
 <label>📍 Điểm đi</label>
-<select id="diemDi"></select>
+<div class="input-wrapper">
+    <input type="text" id="diemDi" placeholder="Nhập hoặc chọn điểm đi" autocomplete="off">
+    <div id="autocompleteDi" class="autocomplete-list"></div>
+</div>
 
 <label>📍 Điểm đến</label>
-<select id="diemDen"></select>
+<div class="input-wrapper">
+    <input type="text" id="diemDen" placeholder="Nhập hoặc chọn điểm đến" autocomplete="off">
+    <div id="autocompleteDen" class="autocomplete-list"></div>
+</div>
 
 <div class="flex-row">
     <button onclick="traCuu()" style="flex:1">🔍 Tra cứu giá</button>
@@ -245,6 +284,7 @@ const scriptUrl =
 "https://script.google.com/macros/s/AKfycby4v6G0suvi5jUrGj7FPovr6XQGx9TOcr6Z0tP29N-2RL7yfvBlFobzi-rCLfQO1tLs8Q/exec";
 
 let duLieu = []; // Lưu dữ liệu bảng giá
+let danhSachDiaDiem = []; // Lưu danh sách địa điểm cho autocomplete
 
 // ==================== TẢI BẢNG GIÁ ====================
 async function loadData(){
@@ -294,7 +334,7 @@ async function loadData(){
     }
 }
 
-// Tạo danh sách địa điểm cho dropdown
+// Tạo danh sách địa điểm cho autocomplete
 function taoDanhSachDiaDiem(){
     const diaDanhSet = new Set();
     duLieu.forEach(tuyen => {
@@ -302,17 +342,69 @@ function taoDanhSachDiaDiem(){
         diaDanhSet.add(tuyen.diemDen);
     });
     
-    const ds = Array.from(diaDanhSet).sort((a,b) => a.localeCompare(b, 'vi'));
+    danhSachDiaDiem = Array.from(diaDanhSet).sort((a,b) => a.localeCompare(b, 'vi'));
     
-    const diemDi = document.getElementById("diemDi");
-    const diemDen = document.getElementById("diemDen");
+    // Khởi tạo autocomplete cho cả 2 input
+    initAutocomplete("diemDi", "autocompleteDi");
+    initAutocomplete("diemDen", "autocompleteDen");
+}
+
+// Hàm khởi tạo autocomplete cho một input
+function initAutocomplete(inputId, listId){
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
     
-    diemDi.innerHTML = "";
-    diemDen.innerHTML = "";
+    // Xử lý khi gõ phím
+    input.addEventListener("input", function(e){
+        const value = this.value.toLowerCase().trim();
+        list.innerHTML = "";
+        
+        if(value === ""){
+            // Hiển thị tất cả địa điểm
+            danhSachDiaDiem.forEach(item => {
+                const div = document.createElement("div");
+                div.textContent = item;
+                div.onclick = () => {
+                    input.value = item;
+                    list.style.display = "none";
+                    traCuu(); // Tự động tra cứu khi chọn
+                };
+                list.appendChild(div);
+            });
+        } else {
+            // Lọc theo từ khóa
+            const filtered = danhSachDiaDiem.filter(item => 
+                item.toLowerCase().includes(value)
+            );
+            
+            filtered.forEach(item => {
+                const div = document.createElement("div");
+                div.textContent = item;
+                div.onclick = () => {
+                    input.value = item;
+                    list.style.display = "none";
+                    traCuu(); // Tự động tra cứu khi chọn
+                };
+                list.appendChild(div);
+            });
+        }
+        
+        list.style.display = list.children.length > 0 ? "block" : "none";
+    });
     
-    ds.forEach(item => {
-        diemDi.innerHTML += `<option value="${item}">${item}</option>`;
-        diemDen.innerHTML += `<option value="${item}">${item}</option>`;
+    // Ẩn dropdown khi click ra ngoài
+    document.addEventListener("click", function(e){
+        if(e.target !== input && !list.contains(e.target)){
+            list.style.display = "none";
+        }
+    });
+    
+    // Hiện dropdown khi focus vào input
+    input.addEventListener("focus", function(){
+        if(danhSachDiaDiem.length > 0){
+            // Kích hoạt sự kiện input để hiển thị danh sách
+            input.dispatchEvent(new Event("input"));
+        }
     });
 }
 
@@ -326,13 +418,13 @@ function doiViTri(){
     traCuu();
 }
 
-// Tra cứu giá
+// Tra cứu giá (không phân biệt hoa thường và dấu cách thừa)
 function traCuu(){
-    const di = document.getElementById("diemDi").value;
-    const den = document.getElementById("diemDen").value;
+    let di = document.getElementById("diemDi").value.trim();
+    let den = document.getElementById("diemDen").value.trim();
     
     if(!di || !den){
-        document.getElementById("ketqua").innerHTML = "<h3 style='color:red;text-align:center'>⚠️ Vui lòng chọn đầy đủ điểm đi và điểm đến</h3>";
+        document.getElementById("ketqua").innerHTML = "<h3 style='color:red;text-align:center'>⚠️ Vui lòng nhập đầy đủ điểm đi và điểm đến</h3>";
         return;
     }
     
@@ -341,6 +433,7 @@ function traCuu(){
         return;
     }
     
+    // Tìm tuyến xe (không phân biệt chiều)
     const tuyen = duLieu.find(x => 
         (x.diemDi === di && x.diemDen === den) ||
         (x.diemDi === den && x.diemDen === di)
@@ -348,7 +441,9 @@ function traCuu(){
     
     if(!tuyen){
         document.getElementById("ketqua").innerHTML = 
-        "<div style='background:#fff3cd;border-radius:10px;padding:15px;text-align:center'>🚫 Không tìm thấy tuyến xe từ <b>" + di + "</b> đến <b>" + den + "</b></div>";
+        "<div style='background:#fff3cd;border-radius:10px;padding:15px;text-align:center'>" +
+        "🚫 Không tìm thấy tuyến xe từ <b>" + di + "</b> đến <b>" + den + "</b><br>" +
+        "Vui lòng kiểm tra lại hoặc liên hệ CSKH.</div>";
         return;
     }
     
@@ -368,14 +463,14 @@ function traCuu(){
     </div>`;
 }
 
-// ==================== ĐẶT XE (GỌI APPS SCRIPT) ====================
+// ==================== ĐẶT XE ====================
 async function datXe(){
     const hoTen = document.getElementById("hoTen").value.trim();
     const sdt = document.getElementById("sdt").value.trim();
     const ngayDi = document.getElementById("ngayDi").value;
     const gioDi = document.getElementById("gioDi").value;
-    const diemDi = document.getElementById("diemDi").value;
-    const diemDen = document.getElementById("diemDen").value;
+    const diemDi = document.getElementById("diemDi").value.trim();
+    const diemDen = document.getElementById("diemDen").value.trim();
     const loaiXeRadio = document.querySelector('input[name="loaiXe"]:checked');
     const loaiXe = loaiXeRadio ? loaiXeRadio.value : "tien_chuyen";
     
@@ -386,7 +481,7 @@ async function datXe(){
     }
     
     if(!diemDi || !diemDen){
-        alert("Vui lòng chọn điểm đi và điểm đến");
+        alert("Vui lòng nhập điểm đi và điểm đến");
         return;
     }
     
@@ -402,7 +497,7 @@ async function datXe(){
         return;
     }
     
-    // Tìm tuyến xe để lấy giá (không bắt buộc nhưng để xác nhận)
+    // Tìm tuyến xe để lấy giá
     const tuyen = duLieu.find(x => 
         (x.diemDi === diemDi && x.diemDen === diemDen) ||
         (x.diemDi === diemDen && x.diemDen === diemDi)
@@ -436,20 +531,21 @@ async function datXe(){
     thongBaoDiv.className = "thongbao-loading";
     
     try{
-        // Gửi dữ liệu theo đúng format Apps Script yêu cầu (có action: "createBooking")
         const response = await fetch(scriptUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                action: "createBooking",  // QUAN TRỌNG: Apps Script cần action này
+                action: "createBooking",
                 hoTen: hoTen,
                 sdt: sdt,
                 diemDi: diemDi,
                 diemDen: diemDen,
                 ngayDi: ngayDi,
-                gioDi: gioDi
+                gioDi: gioDi,
+                loaiXe: loaiXeText,
+                giaTri: giaTri
             })
         });
         
@@ -462,7 +558,8 @@ async function datXe(){
             // Reset form
             document.getElementById("hoTen").value = "";
             document.getElementById("sdt").value = "";
-            // Giữ nguyên ngày giờ mặc định
+            
+            // Reset ngày giờ về mặc định
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -491,29 +588,21 @@ async function datXe(){
     }
 }
 
-// Tự động tra cứu khi thay đổi điểm đi/đến
-function autoTraCuu(){
-    document.getElementById("diemDi").addEventListener("change", () => traCuu());
-    document.getElementById("diemDen").addEventListener("change", () => traCuu());
-}
-
 // Khởi tạo
 window.addEventListener("DOMContentLoaded", () => {
     loadData().then(() => {
-        autoTraCuu();
+        // Set ngày mặc định là hôm nay
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const ngayDiInput = document.getElementById("ngayDi");
+        if(ngayDiInput) ngayDiInput.value = `${yyyy}-${mm}-${dd}`;
+        
+        // Set giờ mặc định là 8:00
+        const gioDiInput = document.getElementById("gioDi");
+        if(gioDiInput) gioDiInput.value = "08:00";
     });
-    
-    // Set ngày mặc định là hôm nay
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const ngayDiInput = document.getElementById("ngayDi");
-    if(ngayDiInput) ngayDiInput.value = `${yyyy}-${mm}-${dd}`;
-    
-    // Set giờ mặc định là 8:00
-    const gioDiInput = document.getElementById("gioDi");
-    if(gioDiInput) gioDiInput.value = "08:00";
 });
 
 </script>
