@@ -3,138 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tài xế</title>
+<title>Đăng nhập tài xế</title>
 
 <style>
-body{font-family:Arial;background:#f3f4f6;padding:15px}
-.container{max-width:500px;margin:auto}
-
-.card{background:#fff;padding:15px;border-radius:12px;margin-top:15px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
-
-input{width:100%;padding:12px;margin-top:10px;border:1px solid #ccc;border-radius:8px}
-
-button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;cursor:pointer}
-
-.loginBtn{background:#198754;color:#fff}
-.regBtn{background:#0d6efd;color:#fff}
-
-.link{
-  text-align:center;
-  margin-top:10px;
-  color:#0d6efd;
-  cursor:pointer;
-}
-
-h2{text-align:center;color:#0d6efd}
-
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial;background:#0d6efd;padding:20px;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.container{max-width:400px;width:100%;margin:auto}
+.card{background:#fff;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+h2{text-align:center;color:#0d6efd;margin-bottom:25px}
+h3{text-align:center;margin-bottom:20px;color:#333}
+input{width:100%;padding:12px;margin:10px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
+input:focus{outline:none;border-color:#0d6efd}
+button{width:100%;padding:14px;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer;margin-top:10px}
+.loginBtn{background:#0d6efd;color:#fff}
+.loginBtn:hover{background:#0b5ed7}
+.regBtn{background:#198754;color:#fff}
+.regBtn:hover{background:#157347}
+.link{text-align:center;margin-top:15px;color:#0d6efd;cursor:pointer;font-size:14px}
+.link:hover{text-decoration:underline}
 .hidden{display:none}
+.msg{padding:10px;border-radius:8px;margin-top:15px;text-align:center;font-size:14px}
+.success{background:#d1e7dd;color:#0f5132}
+.error{background:#f8d7da;color:#842029}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
-<h2>🚖 TÀI XẾ</h2>
-
-<!-- LOGIN -->
-<div class="card" id="loginBox">
-
-<h3>Đăng nhập</h3>
-
-<input id="sdtLogin" placeholder="Số điện thoại">
-<input id="passLogin" placeholder="Mật khẩu">
-
-<button class="loginBtn" onclick="login()">Đăng nhập</button>
-
-<div class="link" onclick="showRegister()">
-👉 Chưa có tài khoản? Đăng ký
-</div>
-
-</div>
-
-<!-- REGISTER -->
-<div class="card hidden" id="registerBox">
-
-<h3>Đăng ký tài xế</h3>
-
-<input id="hoTen" placeholder="Họ tên">
-<input id="sdt" placeholder="Số điện thoại">
-<input id="matKhau" placeholder="Mật khẩu">
-
-<button class="regBtn" onclick="register()">Đăng ký</button>
-
-<div class="link" onclick="showLogin()">
-← Quay lại đăng nhập
-</div>
-
-</div>
-
-<div id="msg"></div>
-
+    <div class="card">
+        <h2>🚖 TÀI XẾ</h2>
+        
+        <!-- Form Đăng nhập -->
+        <div id="loginBox">
+            <h3>🔐 Đăng nhập</h3>
+            <input id="sdtLogin" placeholder="Số điện thoại" type="tel">
+            <input id="passLogin" placeholder="Mật khẩu" type="password">
+            <button class="loginBtn" onclick="login()">Đăng nhập</button>
+            <div class="link" onclick="showRegister()">👉 Chưa có tài khoản? Đăng ký</div>
+        </div>
+        
+        <!-- Form Đăng ký -->
+        <div id="registerBox" class="hidden">
+            <h3>📝 Đăng ký tài xế</h3>
+            <input id="hoTen" placeholder="Họ tên">
+            <input id="sdt" placeholder="Số điện thoại" type="tel">
+            <input id="matKhau" placeholder="Mật khẩu" type="password">
+            <button class="regBtn" onclick="register()">Đăng ký</button>
+            <div class="link" onclick="showLogin()">← Quay lại đăng nhập</div>
+        </div>
+        
+        <div id="msg"></div>
+    </div>
 </div>
 
 <script>
 
 const API = "https://script.google.com/macros/s/AKfycby4v6G0suvi5jUrGj7FPovr6XQGx9TOcr6Z0tP29N-2RL7yfvBlFobzi-rCLfQO1tLs8Q/exec";
 
-// ================= UI SWITCH =================
+// Kiểm tra nếu đã đăng nhập thì chuyển thẳng vào app
+const driver = JSON.parse(localStorage.getItem("driver") || "null");
+if(driver && driver.sdt){
+    location.href = "laixe.html";
+}
+
 function showRegister(){
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("registerBox").classList.remove("hidden");
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("registerBox").classList.remove("hidden");
+    document.getElementById("msg").innerHTML = "";
 }
 
 function showLogin(){
-  document.getElementById("registerBox").classList.add("hidden");
-  document.getElementById("loginBox").classList.remove("hidden");
+    document.getElementById("registerBox").classList.add("hidden");
+    document.getElementById("loginBox").classList.remove("hidden");
+    document.getElementById("msg").innerHTML = "";
 }
 
-// ================= REGISTER =================
+function showMessage(text, type){
+    const msgDiv = document.getElementById("msg");
+    msgDiv.innerHTML = `<div class="msg ${type}">${text}</div>`;
+    setTimeout(() => {
+        if(msgDiv.innerHTML === `<div class="msg ${type}">${text}</div>`){
+            msgDiv.innerHTML = "";
+        }
+    }, 3000);
+}
+
+// ĐĂNG KÝ
 async function register(){
-
-  const hoTen = document.getElementById("hoTen").value;
-  const sdt = document.getElementById("sdt").value;
-  const matKhau = document.getElementById("matKhau").value;
-
-  const res = await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"registerDriver",
-      hoTen,sdt,matKhau
-    })
-  });
-
-  const data = await res.json();
-
-  document.getElementById("msg").innerHTML =
-    data.success ? "✅ Đăng ký thành công" : "❌ Lỗi";
+    const hoTen = document.getElementById("hoTen").value.trim();
+    const sdt = document.getElementById("sdt").value.trim();
+    const matKhau = document.getElementById("matKhau").value.trim();
+    
+    if(!hoTen || !sdt || !matKhau){
+        showMessage("Vui lòng nhập đầy đủ thông tin", "error");
+        return;
+    }
+    
+    if(!/^[0-9]{9,11}$/.test(sdt)){
+        showMessage("Số điện thoại không hợp lệ (9-11 số)", "error");
+        return;
+    }
+    
+    if(matKhau.length < 4){
+        showMessage("Mật khẩu phải có ít nhất 4 ký tự", "error");
+        return;
+    }
+    
+    showMessage("⏳ Đang đăng ký...", "success");
+    
+    try{
+        const res = await fetch(API, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                action: "registerDriver",
+                hoTen: hoTen,
+                sdt: sdt,
+                matKhau: matKhau
+            })
+        });
+        
+        const data = await res.json();
+        
+        if(data.success){
+            showMessage("✅ Đăng ký thành công! Vui lòng đăng nhập.", "success");
+            document.getElementById("hoTen").value = "";
+            document.getElementById("sdt").value = "";
+            document.getElementById("matKhau").value = "";
+            setTimeout(() => {
+                showLogin();
+            }, 1500);
+        } else {
+            showMessage("❌ " + (data.message || "Đăng ký thất bại"), "error");
+        }
+    } catch(err){
+        showMessage("❌ Lỗi kết nối: " + err.message, "error");
+    }
 }
 
-// ================= LOGIN =================
+// ĐĂNG NHẬP
 async function login(){
-
-  const sdt = document.getElementById("sdtLogin").value;
-  const matKhau = document.getElementById("passLogin").value;
-
-  const res = await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"loginDriver",
-      sdt,matKhau
-    })
-  });
-
-  const data = await res.json();
-
-  if(data.success){
-
-    localStorage.setItem("driver", JSON.stringify(data.user));
-
-    location.href = "laixe.html";
-
-  } else {
-    alert("Sai tài khoản hoặc mật khẩu");
-  }
+    const sdt = document.getElementById("sdtLogin").value.trim();
+    const matKhau = document.getElementById("passLogin").value.trim();
+    
+    if(!sdt || !matKhau){
+        showMessage("Vui lòng nhập số điện thoại và mật khẩu", "error");
+        return;
+    }
+    
+    showMessage("⏳ Đang đăng nhập...", "success");
+    
+    try{
+        const res = await fetch(API, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                action: "loginDriver",
+                sdt: sdt,
+                matKhau: matKhau
+            })
+        });
+        
+        const data = await res.json();
+        
+        if(data.success){
+            localStorage.setItem("driver", JSON.stringify(data.user));
+            showMessage("✅ Đăng nhập thành công! Đang chuyển hướng...", "success");
+            setTimeout(() => {
+                location.href = "laixe.html";
+            }, 1000);
+        } else {
+            showMessage("❌ " + (data.message || "Sai tài khoản hoặc mật khẩu"), "error");
+        }
+    } catch(err){
+        showMessage("❌ Lỗi kết nối: " + err.message, "error");
+    }
 }
 
 </script>
