@@ -128,17 +128,6 @@ button:hover{
     font-weight:bold;
 }
 
-.gia-chon{
-    color:#198754;
-    font-size:28px;
-    font-weight:bold;
-    background:#d1e7dd;
-    padding:10px;
-    border-radius:8px;
-    text-align:center;
-    margin-top:10px;
-}
-
 #thongBao{
     margin-top:15px;
     text-align:center;
@@ -247,16 +236,17 @@ hr{
 
 <script>
 
-// LINK CSV GOOGLE SHEET TUYẾN XE
+// LINK CSV GOOGLE SHEET TUYẾN XE (bảng giá)
 const csvUrl =
 "https://docs.google.com/spreadsheets/d/1ql2Aruz-GCF8lAInY-b_b72d74vazyhM2-wwSiCCNNQ/gviz/tq?tqx=out:csv";
 
-// LINK APPS SCRIPT
+// LINK APPS SCRIPT (đặt xe)
 const scriptUrl =
 "https://script.google.com/macros/s/AKfycby4v6G0suvi5jUrGj7FPovr6XQGx9TOcr6Z0tP29N-2RL7yfvBlFobzi-rCLfQO1tLs8Q/exec";
 
-let duLieu = [];
+let duLieu = []; // Lưu dữ liệu bảng giá
 
+// ==================== TẢI BẢNG GIÁ ====================
 async function loadData(){
     try{
         const ketquaDiv = document.getElementById("ketqua");
@@ -299,11 +289,12 @@ async function loadData(){
         
     }catch(err){
         document.getElementById("ketqua").innerHTML =
-        "<p style='color:red;text-align:center'>❌ Không tải được dữ liệu.</p>";
+        "<p style='color:red;text-align:center'>❌ Không tải được dữ liệu bảng giá.</p>";
         console.error(err);
     }
 }
 
+// Tạo danh sách địa điểm cho dropdown
 function taoDanhSachDiaDiem(){
     const diaDanhSet = new Set();
     duLieu.forEach(tuyen => {
@@ -325,6 +316,7 @@ function taoDanhSachDiaDiem(){
     });
 }
 
+// Đổi vị trí điểm đi và điểm đến
 function doiViTri(){
     const diemDi = document.getElementById("diemDi");
     const diemDen = document.getElementById("diemDen");
@@ -334,6 +326,7 @@ function doiViTri(){
     traCuu();
 }
 
+// Tra cứu giá
 function traCuu(){
     const di = document.getElementById("diemDi").value;
     const den = document.getElementById("diemDen").value;
@@ -375,6 +368,7 @@ function traCuu(){
     </div>`;
 }
 
+// ==================== ĐẶT XE (GỌI APPS SCRIPT) ====================
 async function datXe(){
     const hoTen = document.getElementById("hoTen").value.trim();
     const sdt = document.getElementById("sdt").value.trim();
@@ -382,10 +376,12 @@ async function datXe(){
     const gioDi = document.getElementById("gioDi").value;
     const diemDi = document.getElementById("diemDi").value;
     const diemDen = document.getElementById("diemDen").value;
-    const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
+    const loaiXeRadio = document.querySelector('input[name="loaiXe"]:checked');
+    const loaiXe = loaiXeRadio ? loaiXeRadio.value : "tien_chuyen";
     
+    // Kiểm tra thông tin
     if(!hoTen || !sdt || !ngayDi || !gioDi){
-        alert("Vui lòng nhập đầy đủ thông tin");
+        alert("Vui lòng nhập đầy đủ họ tên, số điện thoại, ngày đi và giờ đi");
         return;
     }
     
@@ -394,29 +390,33 @@ async function datXe(){
         return;
     }
     
+    if(diemDi === diemDen){
+        alert("Điểm đi và điểm đến không thể trùng nhau");
+        return;
+    }
+    
+    // Kiểm tra số điện thoại
+    const phoneRegex = /^[0-9]{9,11}$/;
+    if(!phoneRegex.test(sdt)){
+        alert("Số điện thoại không hợp lệ (phải 9-11 chữ số)");
+        return;
+    }
+    
+    // Tìm tuyến xe để lấy giá (không bắt buộc nhưng để xác nhận)
     const tuyen = duLieu.find(x => 
         (x.diemDi === diemDi && x.diemDen === diemDen) ||
         (x.diemDi === diemDen && x.diemDen === diemDi)
     );
     
-    if(!tuyen){
-        alert("Không tìm thấy tuyến xe. Vui lòng tra cứu lại.");
-        return;
-    }
-    
+    let loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
     let giaTri = 0;
-    let loaiXeText = "";
-    if(loaiXe === "tien_chuyen"){
-        giaTri = Number(String(tuyen.giaTienChuyen).replace(/,/g, "").trim());
-        loaiXeText = "Tiện chuyến";
-    } else {
-        giaTri = Number(String(tuyen.giaBaoXe).replace(/,/g, "").trim());
-        loaiXeText = "Bao xe";
-    }
     
-    if(isNaN(giaTri) || giaTri === 0){
-        alert("Giá không hợp lệ cho loại xe này. Vui lòng kiểm tra lại.");
-        return;
+    if(tuyen){
+        if(loaiXe === "tien_chuyen"){
+            giaTri = Number(String(tuyen.giaTienChuyen).replace(/,/g, "").trim());
+        } else {
+            giaTri = Number(String(tuyen.giaBaoXe).replace(/,/g, "").trim());
+        }
     }
     
     const confirmMsg = `Xác nhận đặt xe ${loaiXeText}:\n
@@ -424,64 +424,96 @@ async function datXe(){
     SĐT: ${sdt}
     Tuyến: ${diemDi} → ${diemDen}
     Ngày giờ: ${ngayDi} ${gioDi}
-    Giá: ${giaTri.toLocaleString("vi-VN")} đồng
+    ${giaTri > 0 ? `Giá: ${giaTri.toLocaleString("vi-VN")}đ` : ''}
     
-    Nhấn OK để hoàn tất.`;
+    Nhấn OK để hoàn tất đặt xe.`;
     
     if(!confirm(confirmMsg)) return;
     
+    // Hiển thị trạng thái đang gửi
     const thongBaoDiv = document.getElementById("thongBao");
     thongBaoDiv.innerHTML = "⏳ Đang gửi yêu cầu đặt xe...";
     thongBaoDiv.className = "thongbao-loading";
     
     try{
-        await fetch(scriptUrl, {
+        // Gửi dữ liệu theo đúng format Apps Script yêu cầu (có action: "createBooking")
+        const response = await fetch(scriptUrl, {
             method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
+                action: "createBooking",  // QUAN TRỌNG: Apps Script cần action này
                 hoTen: hoTen,
                 sdt: sdt,
                 diemDi: diemDi,
                 diemDen: diemDen,
                 ngayDi: ngayDi,
-                gioDi: gioDi,
-                giaTri: giaTri,
-                loaiXe: loaiXeText,
-                km: tuyen.km
+                gioDi: gioDi
             })
         });
         
-        thongBaoDiv.innerHTML = "✅ Đặt xe thành công! Chúng tôi sẽ liên hệ xác nhận sớm.";
-        thongBaoDiv.className = "thongbao-thanhcong";
+        const result = await response.json();
         
-        document.getElementById("hoTen").value = "";
-        document.getElementById("sdt").value = "";
-        document.getElementById("ngayDi").value = "";
-        document.getElementById("gioDi").value = "";
+        if(result.success){
+            thongBaoDiv.innerHTML = `✅ Đặt xe thành công! Mã đơn: ${result.id || "Đã ghi nhận"}. Chúng tôi sẽ liên hệ xác nhận sớm.`;
+            thongBaoDiv.className = "thongbao-thanhcong";
+            
+            // Reset form
+            document.getElementById("hoTen").value = "";
+            document.getElementById("sdt").value = "";
+            // Giữ nguyên ngày giờ mặc định
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById("ngayDi").value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById("gioDi").value = "08:00";
+        } else {
+            thongBaoDiv.innerHTML = `❌ Đặt xe thất bại: ${result.message || "Lỗi không xác định"}`;
+            thongBaoDiv.className = "thongbao-loi";
+        }
         
+        // Tự động ẩn thông báo sau 5 giây
         setTimeout(() => {
-            if(thongBaoDiv.innerHTML.includes("thành công")){
-                thongBaoDiv.innerHTML = "";
-                thongBaoDiv.className = "";
+            if(thongBaoDiv.innerHTML.includes("thành công") || thongBaoDiv.innerHTML.includes("thất bại")){
+                setTimeout(() => {
+                    thongBaoDiv.innerHTML = "";
+                    thongBaoDiv.className = "";
+                }, 3000);
             }
         }, 5000);
         
     } catch(error){
-        thongBaoDiv.innerHTML = "❌ Gửi thất bại. Vui lòng thử lại.";
+        console.error("Lỗi đặt xe:", error);
+        thongBaoDiv.innerHTML = "❌ Gửi thất bại. Vui lòng kiểm tra kết nối mạng và thử lại.";
         thongBaoDiv.className = "thongbao-loi";
-        console.error(error);
     }
 }
 
+// Tự động tra cứu khi thay đổi điểm đi/đến
+function autoTraCuu(){
+    document.getElementById("diemDi").addEventListener("change", () => traCuu());
+    document.getElementById("diemDen").addEventListener("change", () => traCuu());
+}
+
+// Khởi tạo
 window.addEventListener("DOMContentLoaded", () => {
-    loadData();
+    loadData().then(() => {
+        autoTraCuu();
+    });
+    
+    // Set ngày mặc định là hôm nay
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
-    document.getElementById("ngayDi").value = `${yyyy}-${mm}-${dd}`;
-    document.getElementById("gioDi").value = "08:00";
+    const ngayDiInput = document.getElementById("ngayDi");
+    if(ngayDiInput) ngayDiInput.value = `${yyyy}-${mm}-${dd}`;
+    
+    // Set giờ mặc định là 8:00
+    const gioDiInput = document.getElementById("gioDi");
+    if(gioDiInput) gioDiInput.value = "08:00";
 });
 
 </script>
