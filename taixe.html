@@ -116,8 +116,7 @@ async function register(){
 const res = await fetch(API, {
     method: "POST",
     body: JSON.stringify({
-        action: "registerDriver",
-        hoTen: hoTen,
+        action: "loginDriver",
         sdt: sdt,
         matKhau: matKhau
     })
