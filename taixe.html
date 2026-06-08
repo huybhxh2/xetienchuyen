@@ -113,17 +113,15 @@ async function register(){
     showMessage("⏳ Đang đăng ký...", "success");
     
     try{
-        const res = await fetch(API, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                action: "registerDriver",
-                hoTen: hoTen,
-                sdt: sdt,
-                matKhau: matKhau
-            })
-        });
-        
+const res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+        action: "registerDriver",
+        hoTen: hoTen,
+        sdt: sdt,
+        matKhau: matKhau
+    })
+});
         const data = await res.json();
         
         if(data.success){
