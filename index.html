@@ -772,35 +772,36 @@
         return { success: true, bookingId: newBooking.id };
     }
     
-    function loadDriverBookings() {
-        if (!currentDriver) return;
-        const driverBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
-        const bookingList = document.getElementById('bookingList');
-        document.getElementById('bookingCount').innerText = driverBookings.length + ' đơn';
-        
-        if (driverBookings.length === 0) {
-            bookingList.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Chưa có đơn hàng nào</div>';
-            return;
-        }
-        
-        bookingList.innerHTML = driverBookings.map((booking, idx) => {
-            const actualIndex = allBookings.findIndex(b => b.id === booking.id);
-            return `
-            <div class="booking-item">
-                <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
-                <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
-                <div class="booking-info">👤 ${booking.hoTen} | 📞 ${booking.sdt}</div>
-                <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
-                <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
-                <div class="booking-actions">
-                    ${booking.status === 'pending' ? `<button class="btn-confirm" onclick="updateBookingStatus(${actualIndex}, 'confirmed')">✅ Xác nhận</button>` : ''}
-                    ${booking.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBookingStatus(${actualIndex}, 'completed')">✅ Hoàn thành</button>` : ''}
-                    ${booking.status === 'pending' ? `<button class="btn-cancel" onclick="updateBookingStatus(${actualIndex}, 'cancelled')">❌ Từ chối</button>` : ''}
-                </div>
-            </div>`;
-        }).join('');
+   function loadDriverBookings() {
+    if (!currentDriver) return;
+    
+    // Lấy tất cả đơn hàng (không lọc theo driverPhone)
+    const allDriverBookings = allBookings.filter(b => b.status === 'pending' || b.status === 'confirmed');
+    
+    const bookingList = document.getElementById('bookingList');
+    document.getElementById('bookingCount').innerText = allDriverBookings.length + ' đơn';
+    
+    if (allDriverBookings.length === 0) {
+        bookingList.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Chưa có đơn hàng nào</div>';
+        return;
     }
     
+    bookingList.innerHTML = allDriverBookings.map((booking, idx) => {
+        const actualIndex = allBookings.findIndex(b => b.id === booking.id);
+        return `
+        <div class="booking-item">
+            <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
+            <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
+            <div class="booking-info">👤 ${booking.hoTen} | 📞 ${booking.sdt}</div>
+            <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
+            <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
+            <div class="booking-actions">
+                ${booking.status === 'pending' ? `<button class="btn-confirm" onclick="updateBookingStatus(${actualIndex}, 'confirmed')">✅ Nhận đơn</button>` : ''}
+                ${booking.status === 'confirmed' && booking.driverPhone === currentDriver.phone ? `<button class="btn-complete" onclick="updateBookingStatus(${actualIndex}, 'completed')">✅ Hoàn thành</button>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
     window.updateBookingStatus = function(index, newStatus) {
         if (allBookings[index]) {
             allBookings[index].status = newStatus;
