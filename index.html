@@ -644,12 +644,13 @@
     const SPREADSHEET_ID = "1NHlih_wxV-rzZCytWbGh96WSFJOfO1yeiPrPp-2QOkg";
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
     
+    // 👇👇👇 THAY URL NÀY BẰNG URL WEB APP CỦA BẠN 👇👇👇
+    const API_URL = "https://script.google.com/macros/s/AKfycbw186RsTclzHo9bjwLkBmvZz6p2YoQXBfX6GX8hZXXhq6cJ3KCcy-4wqzC62U11M1-x/exec";
+    
     // State
     let danhSachTuyen = [];
     let danhSachDiaDanh = [];
-    let currentDriver = JSON.parse(localStorage.getItem('currentDriver') || 'null');
-    let drivers = JSON.parse(localStorage.getItem('drivers') || '[]');
-    let allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    let currentDriver = null;
     
     // DOM elements
     const diemDiInput = document.getElementById('diemDi');
@@ -658,6 +659,23 @@
     const autoDenDiv = document.getElementById('autocompleteDen');
     const ketQuaDiv = document.getElementById('ketQuaContainer');
     const thongBaoDiv = document.getElementById('thongBao');
+    
+    // ==================== HÀM GỌI API ====================
+    async function callAPI(action, data) {
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error("API Error:", error);
+            return { status: "error", message: error.message };
+        }
+    }
     
     // Helper functions
     function normalizePlace(str) {
@@ -672,55 +690,34 @@
         return normalizePlace(loc1) === normalizePlace(loc2);
     }
     
-    function saveDrivers() { localStorage.setItem('drivers', JSON.stringify(drivers)); }
-    function saveCurrentDriver() { localStorage.setItem('currentDriver', JSON.stringify(currentDriver)); }
-    function saveBookings() { localStorage.setItem('bookings', JSON.stringify(allBookings)); }
-    
-    // ==================== QUẢN LÝ TÀI KHOẢN ====================
-    function registerDriver(name, phone, email, plate, carType, password) {
-        if (drivers.find(d => d.phone === phone)) {
-            return { success: false, message: "Số điện thoại đã đăng ký!" };
+    // ==================== QUẢN LÝ TÀI KHOẢN (GỌI API) ====================
+    async function registerDriver(name, phone, email, plate, carType, password) {
+        const result = await callAPI("register", { name, phone, email, plate, carType, password });
+        if (result.status === "success") {
+            return { success: true, message: result.message };
+        } else {
+            return { success: false, message: result.message };
         }
-        if (password.length < 6) {
-            return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
-        }
-        
-        const newDriver = {
-            id: "DR" + Date.now(),
-            name, phone, email, plate, carType,
-            password: btoa(password),
-            status: 'active',
-            createdAt: new Date().toISOString()
-        };
-        drivers.push(newDriver);
-        saveDrivers();
-        
-        return { success: true, message: "Đăng ký thành công!" };
     }
     
-    function loginDriver(phone, password) {
-        const hashedPassword = btoa(password);
-        const driver = drivers.find(d => d.phone === phone && d.password === hashedPassword);
-        if (!driver) {
-            return { success: false, message: "Số điện thoại hoặc mật khẩu không đúng!" };
+    async function loginDriver(phone, password) {
+        const result = await callAPI("login", { phone, password });
+        if (result.status === "success") {
+            currentDriver = result.data;
+            localStorage.setItem('currentDriver', JSON.stringify(currentDriver));
+            return { success: true, message: result.message, driver: result.data };
+        } else {
+            return { success: false, message: result.message };
         }
-        if (driver.status !== 'active') {
-            return { success: false, message: "Tài khoản đã bị khóa! Vui lòng liên hệ Admin." };
-        }
-        currentDriver = driver;
-        saveCurrentDriver();
-        return { success: true, message: "Đăng nhập thành công!", driver };
     }
     
-    function resetPassword(phone, email) {
-        const driver = drivers.find(d => d.phone === phone && d.email === email);
-        if (!driver) {
-            return { success: false, message: "Không tìm thấy tài khoản!" };
+    async function resetPassword(phone, email) {
+        const result = await callAPI("resetPassword", { phone, email });
+        if (result.status === "success") {
+            return { success: true, message: result.message };
+        } else {
+            return { success: false, message: result.message };
         }
-        const newPassword = Math.random().toString(36).substring(2, 8);
-        driver.password = btoa(newPassword);
-        saveDrivers();
-        return { success: true, message: `Mật khẩu mới của bạn: ${newPassword}` };
     }
     
     function logoutDriver() {
@@ -728,57 +725,55 @@
         localStorage.removeItem('currentDriver');
     }
     
-    // ==================== ĐƠN HÀNG ====================
-    function createBooking(bookingData) {
-        const newBooking = {
-            id: "BK" + Date.now(),
-            ...bookingData,
-            status: 'pending',
-            driverPhone: null,
-            timestamp: new Date().toISOString()
-        };
-        allBookings.push(newBooking);
-        saveBookings();
-        return { success: true, bookingId: newBooking.id };
-    }
-    
-    function loadDriverBookings() {
-        if (!currentDriver) return;
-        const driverBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
-        const bookingList = document.getElementById('bookingList');
-        document.getElementById('bookingCount').innerText = driverBookings.length + ' đơn';
-        
-        if (driverBookings.length === 0) {
-            bookingList.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Chưa có đơn hàng nào</div>';
-            return;
+    // ==================== ĐƠN HÀNG (GỌI API) ====================
+    async function createBooking(bookingData) {
+        const result = await callAPI("createBooking", bookingData);
+        if (result.status === "success") {
+            return { success: true, bookingId: result.data?.bookingId };
         }
-        
-        bookingList.innerHTML = driverBookings.map((booking, idx) => {
-            const actualIndex = allBookings.findIndex(b => b.id === booking.id);
-            return `
-            <div class="booking-item">
-                <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
-                <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
-                <div class="booking-info">👤 ${booking.hoTen} | 📞 ${booking.sdt}</div>
-                <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
-                <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
-                <div class="booking-actions">
-                    ${booking.status === 'pending' ? `<button class="btn-confirm" onclick="updateBookingStatus(${actualIndex}, 'confirmed')">✅ Xác nhận</button>` : ''}
-                    ${booking.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBookingStatus(${actualIndex}, 'completed')">✅ Hoàn thành</button>` : ''}
-                    ${booking.status === 'pending' ? `<button class="btn-cancel" onclick="updateBookingStatus(${actualIndex}, 'cancelled')">❌ Từ chối</button>` : ''}
-                </div>
-            </div>`;
-        }).join('');
+        return { success: false, message: result.message };
     }
     
-    window.updateBookingStatus = function(index, newStatus) {
-        if (allBookings[index]) {
-            allBookings[index].status = newStatus;
-            if (newStatus === 'confirmed' && !allBookings[index].driverPhone) {
-                allBookings[index].driverPhone = currentDriver?.phone;
+    async function loadDriverBookings() {
+        if (!currentDriver) return;
+        const result = await callAPI("getBookings", { driverPhone: currentDriver.phone });
+        if (result.status === "success") {
+            const bookings = result.data || [];
+            const bookingList = document.getElementById('bookingList');
+            document.getElementById('bookingCount').innerText = bookings.length + ' đơn';
+            
+            if (bookings.length === 0) {
+                bookingList.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Chưa có đơn hàng nào</div>';
+                return;
             }
-            saveBookings();
+            
+            bookingList.innerHTML = bookings.map((booking) => `
+                <div class="booking-item">
+                    <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
+                    <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
+                    <div class="booking-info">👤 ${booking.hoTen} | 📞 ${booking.sdt}</div>
+                    <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
+                    <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
+                    <div class="booking-actions">
+                        ${booking.status === 'pending' ? `<button class="btn-confirm" onclick="updateBookingStatus('${booking.id}', 'confirmed')">✅ Xác nhận</button>` : ''}
+                        ${booking.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBookingStatus('${booking.id}', 'completed')">✅ Hoàn thành</button>` : ''}
+                        ${booking.status === 'pending' ? `<button class="btn-cancel" onclick="updateBookingStatus('${booking.id}', 'cancelled')">❌ Từ chối</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    window.updateBookingStatus = async function(bookingId, newStatus) {
+        const result = await callAPI("updateBookingStatus", { 
+            bookingId, 
+            newStatus, 
+            driverPhone: currentDriver?.phone 
+        });
+        if (result.status === "success") {
             loadDriverBookings();
+        } else {
+            alert(result.message);
         }
     };
     
@@ -895,7 +890,7 @@
     }
     
     // ==================== ĐẶT XE ====================
-    function datXe() {
+    async function datXe() {
         const hoTen = document.getElementById('hoTen').value.trim();
         const sdt = document.getElementById('sdt').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -919,7 +914,9 @@
         
         if (!confirm(`XÁC NHẬN ĐẶT ${loaiXeText}\n👤 ${hoTen}\n📞 ${sdt}\n🚏 ${diemDi} → ${diemDen}\n📅 ${ngayDi} ${gioDi}\n💰 ${giaTri.toLocaleString('vi-VN')}đ`)) return;
         
-        const result = createBooking({ hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi, loaiXe: loaiXeText, giaTri });
+        thongBaoDiv.innerHTML = '<div class="toast-message toast-loading">⏳ Đang xử lý...</div>';
+        
+        const result = await createBooking({ hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi, loaiXe: loaiXeText, giaTri });
         
         if (result.success) {
             thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công! Tài xế sẽ liên hệ.</div>';
@@ -934,13 +931,16 @@
     
     // ==================== TÀI XẾ UI ====================
     function updateDriverUI() {
-        if (currentDriver) {
+        const savedDriver = localStorage.getItem('currentDriver');
+        if (savedDriver) {
+            currentDriver = JSON.parse(savedDriver);
             document.getElementById('driverNotLogged').style.display = 'none';
             document.getElementById('driverLogged').style.display = 'block';
             document.getElementById('driverName').innerText = currentDriver.name;
             document.getElementById('driverPhone').innerText = currentDriver.phone;
             loadDriverBookings();
         } else {
+            currentDriver = null;
             document.getElementById('driverNotLogged').style.display = 'block';
             document.getElementById('driverLogged').style.display = 'none';
         }
@@ -960,10 +960,10 @@
     document.getElementById('driverLoginBtn')?.addEventListener('click', () => showModal(modals.login));
     document.getElementById('openDriverLogin')?.addEventListener('click', () => showModal(modals.login));
     document.getElementById('closeLoginModal')?.addEventListener('click', () => hideModal(modals.login));
-    document.getElementById('confirmLogin')?.addEventListener('click', () => {
+    document.getElementById('confirmLogin')?.addEventListener('click', async () => {
         const phone = document.getElementById('loginPhone').value.trim();
         const password = document.getElementById('loginPassword').value;
-        const result = loginDriver(phone, password);
+        const result = await loginDriver(phone, password);
         alert(result.message);
         if (result.success) {
             hideModal(modals.login);
@@ -977,7 +977,7 @@
     // Đăng ký
     document.getElementById('openDriverRegister')?.addEventListener('click', () => showModal(modals.register));
     document.getElementById('closeRegisterModal')?.addEventListener('click', () => hideModal(modals.register));
-    document.getElementById('confirmRegister')?.addEventListener('click', () => {
+    document.getElementById('confirmRegister')?.addEventListener('click', async () => {
         const name = document.getElementById('regName').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
         const email = document.getElementById('regEmail').value.trim();
@@ -989,7 +989,7 @@
         if (!name || !phone || !password) { alert("Vui lòng nhập đầy đủ thông tin"); return; }
         if (password !== confirm) { alert("Mật khẩu xác nhận không khớp"); return; }
         
-        const result = registerDriver(name, phone, email, plate, carType, password);
+        const result = await registerDriver(name, phone, email, plate, carType, password);
         alert(result.message);
         if (result.success) {
             hideModal(modals.register);
@@ -1008,10 +1008,10 @@
         showModal(modals.forgot);
     });
     document.getElementById('closeForgotModal')?.addEventListener('click', () => hideModal(modals.forgot));
-    document.getElementById('confirmForgot')?.addEventListener('click', () => {
+    document.getElementById('confirmForgot')?.addEventListener('click', async () => {
         const phone = document.getElementById('forgotPhone').value.trim();
         const email = document.getElementById('forgotEmail').value.trim();
-        const result = resetPassword(phone, email);
+        const result = await resetPassword(phone, email);
         alert(result.message);
         if (result.success) hideModal(modals.forgot);
     });
@@ -1052,6 +1052,9 @@
     document.getElementById('btnTraCuu')?.addEventListener('click', traCuuGia);
     document.getElementById('btnDoiViTri')?.addEventListener('click', doiViTri);
     document.getElementById('btnDatXe')?.addEventListener('click', datXe);
+    
+    // Make updateBookingStatus global
+    window.updateBookingStatus = updateBookingStatus;
     
     // Init
     loadDataFromSheet();
