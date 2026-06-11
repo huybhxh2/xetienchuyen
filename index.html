@@ -3,275 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Đặt xe - Tiện chuyến & Bao xe | Vận tải kết nối</title>
+<title>Đặt xe - Xem danh sách điểm có sẵn</title>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    }
-
-    body {
-        background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
-        padding: 20px;
-        min-height: 100vh;
-    }
-
-    .container {
-        max-width: 750px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 32px;
-        box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
-        transition: all 0.2s;
-    }
-
-    .header {
-        background: #0d6efd;
-        padding: 24px 28px;
-        color: white;
-    }
-
-    .header h1 {
-        font-size: 1.9rem;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        margin: 0;
-    }
-
-    .badge {
-        background: rgba(255,255,255,0.2);
-        padding: 6px 14px;
-        border-radius: 40px;
-        font-size: 0.85rem;
-        font-weight: normal;
-    }
-
-    .content {
-        padding: 28px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    label {
-        font-weight: 600;
-        display: block;
-        margin-bottom: 8px;
-        color: #1e293b;
-        font-size: 0.9rem;
-    }
-
-    .input-wrapper {
-        position: relative;
-    }
-
-    input, .fake-input {
-        width: 100%;
-        padding: 14px 16px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 20px;
-        font-size: 1rem;
-        transition: 0.2s;
-        background: white;
-    }
-
-    input:focus {
-        outline: none;
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 4px rgba(13,110,253,0.15);
-    }
-
-    .autocomplete-list {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-top: none;
-        border-radius: 0 0 20px 20px;
-        max-height: 220px;
-        overflow-y: auto;
-        z-index: 100;
-        display: none;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    .autocomplete-list div {
-        padding: 12px 16px;
-        cursor: pointer;
-        transition: 0.1s;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .autocomplete-list div:hover {
-        background: #0d6efd;
-        color: white;
-    }
-
-    .btn-group {
-        display: flex;
-        gap: 12px;
-        margin: 25px 0 15px;
-    }
-
-    button {
-        background: #0d6efd;
-        color: white;
-        border: none;
-        padding: 12px 18px;
-        border-radius: 40px;
-        font-weight: bold;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: 0.2s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    button:hover {
-        background: #0b5ed7;
-        transform: scale(0.98);
-    }
-
-    .btn-outline {
-        background: white;
-        color: #0d6efd;
-        border: 1.5px solid #0d6efd;
-    }
-
-    .btn-outline:hover {
-        background: #eef6ff;
-        transform: none;
-    }
-
-    .card-result {
-        background: #f8fafc;
-        border-radius: 28px;
-        padding: 20px;
-        margin: 20px 0;
-        border-left: 6px solid #0d6efd;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-
-    .price-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        flex-wrap: wrap;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px dashed #cbd5e1;
-    }
-
-    .price-tc {
-        font-size: 1.7rem;
-        font-weight: 800;
-        color: #0d6efd;
-    }
-
-    .price-bx {
-        font-size: 1.7rem;
-        font-weight: 800;
-        color: #dc2626;
-    }
-
-    .radio-group {
-        background: #f1f5f9;
-        padding: 12px 18px;
-        border-radius: 60px;
-        display: inline-flex;
-        gap: 24px;
-        margin: 10px 0 20px;
-    }
-
-    .radio-group label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 500;
-        margin: 0;
-    }
-
-    hr {
-        margin: 28px 0;
-        border: none;
-        height: 2px;
-        background: linear-gradient(to right, #cbd5e1, transparent);
-    }
-
-    .toast-message {
-        margin-top: 20px;
-        padding: 14px;
-        border-radius: 60px;
-        text-align: center;
-        font-weight: 500;
-        transition: 0.2s;
-    }
-
-    .success {
-        background: #dcfce7;
-        color: #15803d;
-        border-left: 5px solid #22c55e;
-    }
-
-    .error {
-        background: #fee2e2;
-        color: #b91c1c;
-        border-left: 5px solid #ef4444;
-    }
-
-    .loading {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .note {
-        font-size: 0.75rem;
-        text-align: center;
-        color: #64748b;
-        margin-top: 24px;
-    }
-
-    footer {
-        background: #f8fafc;
-        text-align: center;
-        padding: 16px;
-        font-size: 0.75rem;
-        color: #475569;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    @media (max-width: 550px) {
-        .content { padding: 20px; }
-        .price-tc, .price-bx { font-size: 1.3rem; }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%); padding: 20px; min-height: 100vh; }
+    .container { max-width: 750px; margin: 0 auto; background: white; border-radius: 32px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2); overflow: hidden; }
+    .header { background: #0d6efd; padding: 24px 28px; color: white; }
+    .header h1 { font-size: 1.9rem; display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+    .badge { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 40px; font-size: 0.85rem; }
+    .content { padding: 28px; }
+    .form-group { margin-bottom: 20px; position: relative; }
+    label { font-weight: 600; display: block; margin-bottom: 8px; color: #1e293b; }
+    input { width: 100%; padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 1rem; transition: 0.2s; }
+    input:focus { outline: none; border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13,110,253,0.15); }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 20px 20px; max-height: 250px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .autocomplete-list div { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+    .autocomplete-list div:hover { background: #0d6efd; color: white; }
+    .btn-group { display: flex; gap: 12px; margin: 25px 0 15px; }
+    button { background: #0d6efd; color: white; border: none; padding: 12px 18px; border-radius: 40px; font-weight: bold; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    button:hover { background: #0b5ed7; }
+    .btn-outline { background: white; color: #0d6efd; border: 1.5px solid #0d6efd; }
+    .card-result { background: #f8fafc; border-radius: 28px; padding: 20px; margin: 20px 0; border-left: 6px solid #0d6efd; }
+    .price-row { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
+    .price-tc { font-size: 1.7rem; font-weight: 800; color: #0d6efd; }
+    .price-bx { font-size: 1.7rem; font-weight: 800; color: #dc2626; }
+    .radio-group { background: #f1f5f9; padding: 12px 18px; border-radius: 60px; display: inline-flex; gap: 24px; margin: 10px 0 20px; }
+    .radio-group label { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; margin: 0; }
+    hr { margin: 28px 0; border: none; height: 2px; background: linear-gradient(to right, #cbd5e1, transparent); }
+    .toast-message { margin-top: 20px; padding: 14px; border-radius: 60px; text-align: center; font-weight: 500; }
+    .success { background: #dcfce7; color: #15803d; border-left: 5px solid #22c55e; }
+    .error { background: #fee2e2; color: #b91c1c; border-left: 5px solid #ef4444; }
+    .loading { background: #fff3cd; color: #856404; }
+    .info-box { background: #e0f2fe; padding: 12px; border-radius: 16px; margin-bottom: 20px; font-size: 0.85rem; color: #0369a1; }
+    .point-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .point-tag { background: #e2e8f0; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; color: #1e293b; cursor: pointer; transition: 0.2s; }
+    .point-tag:hover { background: #0d6efd; color: white; }
+    .note { font-size: 0.75rem; text-align: center; color: #64748b; margin-top: 24px; }
+    footer { background: #f8fafc; text-align: center; padding: 16px; font-size: 0.75rem; color: #475569; border-top: 1px solid #e2e8f0; }
+    @media (max-width: 550px) { .content { padding: 20px; } .price-tc, .price-bx { font-size: 1.3rem; } }
 </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>
-            🚖 Vận tải kết nối
-            <span class="badge">Tiện chuyến · Bao xe</span>
-        </h1>
-        <p style="margin-top: 8px; opacity: 0.9;">Giá niêm yết từ Cộng đồng | Đặt xe dễ dàng</p>
+        <h1>🚖 Vận tải kết nối<span class="badge">Tiện chuyến · Bao xe</span></h1>
+        <p style="margin-top: 8px; opacity: 0.9;">📋 Click vào ô để xem danh sách điểm có sẵn</p>
     </div>
     <div class="content">
-        <!-- Tra cứu -->
+        <div class="info-box" id="infoBox">
+            ⏳ Đang tải danh sách điểm từ Google Sheet...
+        </div>
+
         <div class="form-group">
             <label>📍 Điểm đi</label>
             <div class="input-wrapper">
-                <input type="text" id="diemDi" placeholder="Nhập hoặc chọn điểm đi" autocomplete="off">
+                <input type="text" id="diemDi" placeholder="Nhập hoặc chọn từ danh sách bên dưới" autocomplete="off">
                 <div id="autocompleteDi" class="autocomplete-list"></div>
             </div>
         </div>
@@ -279,7 +65,7 @@
         <div class="form-group">
             <label>📍 Điểm đến</label>
             <div class="input-wrapper">
-                <input type="text" id="diemDen" placeholder="Nhập hoặc chọn điểm đến" autocomplete="off">
+                <input type="text" id="diemDen" placeholder="Nhập hoặc chọn từ danh sách bên dưới" autocomplete="off">
                 <div id="autocompleteDen" class="autocomplete-list"></div>
             </div>
         </div>
@@ -290,433 +76,245 @@
         </div>
 
         <div id="ketQuaContainer"></div>
-
         <hr />
-
         <h3 style="margin-bottom: 16px;">✍️ Đặt xe ngay</h3>
 
         <div class="radio-group">
-            <label>
-                <input type="radio" name="loaiXe" value="tien_chuyen" checked> 🚗 Tiện chuyến
-            </label>
-            <label>
-                <input type="radio" name="loaiXe" value="bao_xe"> 🚙 Bao xe (riêng)
-            </label>
+            <label><input type="radio" name="loaiXe" value="tien_chuyen" checked> 🚗 Tiện chuyến</label>
+            <label><input type="radio" name="loaiXe" value="bao_xe"> 🚙 Bao xe</label>
         </div>
 
-        <div class="form-group">
-            <label>👤 Họ và tên</label>
-            <input type="text" id="hoTen" placeholder="Nguyễn Văn A">
-        </div>
-
-        <div class="form-group">
-            <label>📞 Số điện thoại</label>
-            <input type="tel" id="sdt" placeholder="0912345678">
-        </div>
-
-        <div class="form-group">
-            <label>📧 Email (nhận xác nhận)</label>
-            <input type="email" id="email" placeholder="example@gmail.com (tùy chọn)">
-        </div>
-
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <div style="flex:1">
-                <label>📅 Ngày đi</label>
-                <input type="date" id="ngayDi">
-            </div>
-            <div style="flex:1">
-                <label>⏰ Giờ đi</label>
-                <input type="time" id="gioDi">
-            </div>
+        <div class="form-group"><label>👤 Họ và tên</label><input type="text" id="hoTen" placeholder="Nguyễn Văn A"></div>
+        <div class="form-group"><label>📞 Số điện thoại</label><input type="tel" id="sdt" placeholder="0912345678"></div>
+        <div class="form-group"><label>📧 Email</label><input type="email" id="email" placeholder="example@gmail.com"></div>
+        
+        <div style="display: flex; gap: 12px;">
+            <div style="flex:1"><label>📅 Ngày đi</label><input type="date" id="ngayDi"></div>
+            <div style="flex:1"><label>⏰ Giờ đi</label><input type="time" id="gioDi"></div>
         </div>
 
         <button id="btnDatXe" style="width: 100%; margin-top: 24px;">🚀 Xác nhận đặt xe</button>
-
         <div id="thongBao"></div>
-        <div class="note">* Đặt xe thành công sẽ được ghi vào Google Sheet quản lý. CSKH sẽ gọi xác nhận.</div>
+        <div class="note">* Đặt xe thành công sẽ được ghi vào Google Sheet quản lý.</div>
     </div>
-    <footer>
-        ⚡ Bảng giá được cập nhật tự động từ Google Sheet | Vận tải an toàn
-    </footer>
+    <footer>⚡ Bảng giá được cập nhật tự động từ Google Sheet</footer>
 </div>
 
 <script>
-    // ==================== CẤU HÌNH ====================
-    // URL CSV của Google Sheet bảng giá (công khai, cấu trúc cột chuẩn)
     const CSV_URL = "https://docs.google.com/spreadsheets/d/1ql2Aruz-GCF8lAInY-b_b72d74vazyhM2-wwSiCCNNQ/export?format=csv";
-    // URL Web App Google Apps Script (đã kiểm tra quyền ghi dữ liệu)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkIQhjOZ2Tg7K9Pml9XnsUlMvcIfjCdUAJwN3fRZPqlIya34wHqc3UeXFowJbTgBbqGg/exec";
     
-    let danhSachTuyen = [];       // Mảng chứa các tuyến (đi, đến, km, giá)
-    let danhSachDiaDanh = [];     // Danh sách địa danh duy nhất cho autocomplete
+    let danhSachTuyen = [];
+    let danhSachDiaDanh = [];
     
-    // DOM elements
     const diemDiInput = document.getElementById('diemDi');
     const diemDenInput = document.getElementById('diemDen');
     const autoDiDiv = document.getElementById('autocompleteDi');
     const autoDenDiv = document.getElementById('autocompleteDen');
     const ketQuaDiv = document.getElementById('ketQuaContainer');
     const thongBaoDiv = document.getElementById('thongBao');
+    const infoBox = document.getElementById('infoBox');
     
-    // ========== 1. TẢI DỮ LIỆU TỪ GOOGLE SHEET (CSV) ==========
+    function normalizePlace(str) {
+        if (!str) return "";
+        return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").replace(/\s+/g, " ").trim();
+    }
+    
     async function loadDataFromSheet() {
         try {
-            ketQuaDiv.innerHTML = '<div style="text-align:center; padding:16px;">⏳ Đang tải bảng giá tuyến xe...</div>';
+            infoBox.innerHTML = '⏳ Đang tải dữ liệu từ Google Sheet...';
             const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error("Không thể tải CSV từ Google Sheet");
+            if (!response.ok) throw new Error("Không thể tải CSV");
             const csvText = await response.text();
             
-            // Phân tích CSV (có hỗ trợ dấu phẩy và ngoặc kép cơ bản)
             const rows = parseCSV(csvText);
-            if (rows.length < 2) throw new Error("CSV không có dữ liệu (thiếu dòng tiêu đề)");
+            if (rows.length < 2) throw new Error("CSV không có dữ liệu");
             
-            const headers = rows[0].map(h => h.trim());
-            // Tìm cột theo tên (không phân biệt hoa thường và khoảng trắng)
-            const idxDi = headers.findIndex(h => h.toLowerCase() === "điểm đi");
-            const idxDen = headers.findIndex(h => h.toLowerCase() === "điểm đến");
-            const idxKm = headers.findIndex(h => h.toLowerCase() === "số km");
-            const idxGiaTc = headers.findIndex(h => h.toLowerCase() === "giá tiện chuyến");
-            const idxGiaBx = headers.findIndex(h => h.toLowerCase() === "giá bao xe");
+            const headers = rows[0].map(h => h.trim().toLowerCase());
+            const idxDi = headers.findIndex(h => h === "điểm đi");
+            const idxDen = headers.findIndex(h => h === "điểm đến");
+            const idxKm = headers.findIndex(h => h === "số km");
+            const idxGiaTc = headers.findIndex(h => h === "giá tiện chuyến");
+            const idxGiaBx = headers.findIndex(h => h === "giá bao xe");
             
             if ([idxDi, idxDen, idxKm, idxGiaTc, idxGiaBx].some(i => i === -1)) {
-                throw new Error("Cấu trúc cột không đúng: cần 5 cột (Điểm đi, Điểm đến, số km, Giá tiện chuyến, Giá bao xe). Kiểm tra tên cột trong sheet.");
+                throw new Error("Cấu trúc cột không đúng. Cần: Điểm đi, Điểm đến, số km, Giá tiện chuyến, Giá bao xe");
             }
             
             danhSachTuyen = [];
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
                 if (row.length < 5) continue;
-                const diemDiRaw = row[idxDi]?.trim();
-                const diemDenRaw = row[idxDen]?.trim();
-                if (!diemDiRaw || !diemDenRaw) continue;
+                const diemDi = row[idxDi]?.trim();
+                const diemDen = row[idxDen]?.trim();
+                if (!diemDi || !diemDen) continue;
                 
-                // Lọc số: giữ lại số, dấu chấm/phẩy, dấu trừ (nhưng chuyển về số)
                 let kmRaw = row[idxKm].replace(/[^0-9.-]/g, '');
                 let giaTcRaw = row[idxGiaTc].replace(/[^0-9.-]/g, '');
                 let giaBxRaw = row[idxGiaBx].replace(/[^0-9.-]/g, '');
                 
-                const tuyen = {
-                    diemDi: diemDiRaw,
-                    diemDen: diemDenRaw,
-                    km: isNaN(parseFloat(kmRaw)) ? 0 : parseFloat(kmRaw),
-                    giaTienChuyen: isNaN(parseFloat(giaTcRaw)) ? 0 : parseFloat(giaTcRaw),
-                    giaBaoXe: isNaN(parseFloat(giaBxRaw)) ? 0 : parseFloat(giaBxRaw),
-                };
-                // Chỉ thêm tuyến nếu có giá hợp lý > 0 (hoặc có km)
-                if (tuyen.giaTienChuyen > 0 || tuyen.giaBaoXe > 0)
-                    danhSachTuyen.push(tuyen);
+                danhSachTuyen.push({
+                    diemDi: diemDi,
+                    diemDen: diemDen,
+                    km: parseFloat(kmRaw) || 0,
+                    giaTienChuyen: parseFloat(giaTcRaw) || 0,
+                    giaBaoXe: parseFloat(giaBxRaw) || 0,
+                });
             }
             
             if (danhSachTuyen.length === 0) {
-                ketQuaDiv.innerHTML = '<div class="toast-message error">⚠️ Không tìm thấy tuyến xe nào có giá hợp lệ. Kiểm tra lại dữ liệu sheet.</div>';
+                infoBox.innerHTML = '❌ Không tìm thấy tuyến xe nào. Kiểm lại sheet!';
                 return;
             }
             
-            // Tạo danh sách địa danh autocomplete (không trùng)
             const diaDanhSet = new Set();
-            danhSachTuyen.forEach(t => {
-                diaDanhSet.add(t.diemDi);
-                diaDanhSet.add(t.diemDen);
-            });
+            danhSachTuyen.forEach(t => { diaDanhSet.add(t.diemDi); diaDanhSet.add(t.diemDen); });
             danhSachDiaDanh = Array.from(diaDanhSet).sort((a,b) => a.localeCompare(b, 'vi'));
             
-            // Cài đặt autocomplete cho hai ô input
+            // Hiển thị danh sách điểm có sẵn dạng tag
+            infoBox.innerHTML = `
+                <strong>✅ Đã tải ${danhSachTuyen.length} tuyến xe | ${danhSachDiaDanh.length} điểm</strong>
+                <div class="point-list" id="pointList">
+                    ${danhSachDiaDanh.map(point => `<span class="point-tag" data-point="${point}">${point}</span>`).join('')}
+                </div>
+                <small style="display:block; margin-top:8px;">💡 Click vào tên điểm để chọn nhanh</small>
+            `;
+            
+            // Gắn sự kiện click cho các tag
+            document.querySelectorAll('.point-tag').forEach(tag => {
+                tag.addEventListener('click', (e) => {
+                    const point = tag.getAttribute('data-point');
+                    if (document.activeElement === diemDiInput || diemDiInput.value === "") {
+                        diemDiInput.value = point;
+                    } else {
+                        diemDenInput.value = point;
+                    }
+                    traCuuGia();
+                });
+            });
+            
             setupAutocomplete(diemDiInput, autoDiDiv);
             setupAutocomplete(diemDenInput, autoDenDiv);
             
-            ketQuaDiv.innerHTML = `<div style="background:#e6f7e6; border-radius:28px; padding:12px; text-align:center; color:#2e7d32;">✅ Đã tải thành công ${danhSachTuyen.length} tuyến xe. Mời tra cứu.</div>`;
-            setTimeout(() => {
-                if (ketQuaDiv.innerHTML.includes('thành công')) ketQuaDiv.innerHTML = '';
-            }, 2500);
         } catch (error) {
             console.error(error);
-            ketQuaDiv.innerHTML = `<div class="toast-message error">❌ Lỗi tải bảng giá: ${error.message}. Vui lòng kiểm tra link sheet hoặc cấu hình cột.</div>`;
+            infoBox.innerHTML = `<div class="toast-message error">❌ Lỗi: ${error.message}</div>`;
         }
     }
     
-    // Parse CSV đơn giản nhưng xử lý dấu ngoặc kép
     function parseCSV(csvString) {
         const rows = [];
-        const regex = /(".*?"|[^",\n]+)(?=\s*,|\s*$)/g;
         const lines = csvString.split(/\r?\n/);
         for (let line of lines) {
             if (line.trim() === "") continue;
-            let row = [];
-            let match;
-            while ((match = regex.exec(line)) !== null) {
-                let val = match[0];
-                if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-                row.push(val.replace(/""/g, '"'));
+            const row = [];
+            let inQuote = false;
+            let current = '';
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') inQuote = !inQuote;
+                else if (char === ',' && !inQuote) { row.push(current.trim()); current = ''; }
+                else current += char;
             }
-            if (row.length) rows.push(row);
-            regex.lastIndex = 0;
+            row.push(current.trim());
+            rows.push(row);
         }
         return rows;
     }
     
-    // Chuẩn hóa chuỗi tiếng Việt (bỏ dấu, viết thường, chuẩn khoảng trắng)
-    function normalizePlace(str) {
-        if (!str) return "";
-        return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/đ/g, "d")
-            .replace(/Đ/g, "D")
-            .replace(/\s+/g, " ")
-            .trim();
-    }
-    
-    // Cài autocomplete cho input
     function setupAutocomplete(inputElement, listElement) {
         inputElement.addEventListener('input', function(e) {
             const keyword = this.value.toLowerCase().trim();
             listElement.innerHTML = '';
-            let filtered = [];
-            if (keyword === "") {
-                filtered = danhSachDiaDanh.slice(0, 15);
-            } else {
-                filtered = danhSachDiaDanh.filter(place => place.toLowerCase().includes(keyword));
-            }
-            filtered.forEach(place => {
+            let filtered = keyword === "" ? danhSachDiaDanh.slice(0, 15) : danhSachDiaDanh.filter(p => p.toLowerCase().includes(keyword) || normalizePlace(p).includes(normalizePlace(keyword)));
+            if (filtered.length === 0) {
                 const div = document.createElement('div');
-                div.textContent = place;
-                div.addEventListener('click', () => {
-                    inputElement.value = place;
-                    listElement.style.display = 'none';
-                    // Tự động tra cứu sau khi chọn để tiện lợi
-                    traCuuGia();
-                });
+                div.textContent = '📭 Không tìm thấy điểm nào';
+                div.style.color = '#94a3b8';
+                div.style.cursor = 'default';
                 listElement.appendChild(div);
-            });
+            } else {
+                filtered.forEach(place => {
+                    const div = document.createElement('div');
+                    div.textContent = place;
+                    div.addEventListener('click', () => { inputElement.value = place; listElement.style.display = 'none'; traCuuGia(); });
+                    listElement.appendChild(div);
+                });
+            }
             listElement.style.display = filtered.length > 0 ? 'block' : 'none';
         });
         
         inputElement.addEventListener('focus', () => {
-            if (danhSachDiaDanh.length > 0 && inputElement.value.trim() === "") {
-                inputElement.dispatchEvent(new Event('input'));
-            }
+            if (danhSachDiaDanh.length > 0) inputElement.dispatchEvent(new Event('input'));
         });
         
         document.addEventListener('click', (e) => {
-            if (!inputElement.contains(e.target) && !listElement.contains(e.target)) {
-                listElement.style.display = 'none';
-            }
+            if (!inputElement.contains(e.target) && !listElement.contains(e.target)) listElement.style.display = 'none';
         });
     }
     
-    // Tra cứu giá (không phân biệt chiều: tìm cả xuôi và ngược)
     function traCuuGia() {
         let di = diemDiInput.value.trim();
         let den = diemDenInput.value.trim();
+        if (!di || !den) { ketQuaDiv.innerHTML = '<div class="toast-message error">❗ Vui lòng nhập điểm đi và đến</div>'; return; }
+        if (normalizePlace(di) === normalizePlace(den)) { ketQuaDiv.innerHTML = '<div class="toast-message error">📍 Điểm đi và đến không thể trùng</div>'; return; }
         
-        if (!di || !den) {
-            ketQuaDiv.innerHTML = '<div class="toast-message error">❗ Vui lòng nhập đầy đủ điểm đi và điểm đến</div>';
-            return;
-        }
-        
-        if (normalizePlace(di) === normalizePlace(den)) {
-            ketQuaDiv.innerHTML = '<div class="toast-message error">📍 Điểm đi và điểm đến không thể trùng nhau</div>';
-            return;
-        }
-        
-        const diNorm = normalizePlace(di);
-        const denNorm = normalizePlace(den);
-        
-        // Tìm tuyến theo 2 chiều
-        const tuyen = danhSachTuyen.find(t => {
-            const tDiNorm = normalizePlace(t.diemDi);
-            const tDenNorm = normalizePlace(t.diemDen);
-            return (tDiNorm === diNorm && tDenNorm === denNorm) || (tDiNorm === denNorm && tDenNorm === diNorm);
-        });
+        const diNorm = normalizePlace(di), denNorm = normalizePlace(den);
+        const tuyen = danhSachTuyen.find(t => (normalizePlace(t.diemDi) === diNorm && normalizePlace(t.diemDen) === denNorm) || (normalizePlace(t.diemDi) === denNorm && normalizePlace(t.diemDen) === diNorm));
         
         if (!tuyen) {
-            ketQuaDiv.innerHTML = `
-                <div class="toast-message error">
-                    🚫 Không tìm thấy tuyến: <strong>${di}</strong> → <strong>${den}</strong><br>
-                    (Vui lòng kiểm tra lại tên điểm hoặc liên hệ CSKH)
-                </div>
-            `;
+            ketQuaDiv.innerHTML = `<div class="toast-message error">🚫 Không tìm thấy tuyến: ${di} → ${den}<br><br>📋 Các điểm có sẵn: ${danhSachDiaDanh.join(', ')}</div>`;
             window.lastQueriedRoute = null;
             return;
         }
         
-        const formatVND = (num) => Number(num).toLocaleString('vi-VN') + 'đ';
-        
+        const formatVND = (num) => num.toLocaleString('vi-VN') + 'đ';
         ketQuaDiv.innerHTML = `
             <div class="card-result">
-                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
-                    <span><strong>🚩 Điểm đi:</strong> ${tuyen.diemDi}</span>
-                    <span><strong>🏁 Điểm đến:</strong> ${tuyen.diemDen}</span>
-                </div>
-                <div style="margin-top:10px;">
-                    <strong>🛣️ Quãng đường:</strong> ${tuyen.km} km
-                </div>
-                <div class="price-row">
-                    <span>🚗 <strong>Tiện chuyến</strong></span>
-                    <span class="price-tc">${formatVND(tuyen.giaTienChuyen)}</span>
-                </div>
-                <div class="price-row">
-                    <span>🚙 <strong>Bao xe</strong></span>
-                    <span class="price-bx">${formatVND(tuyen.giaBaoXe)}</span>
-                </div>
-            </div>
-        `;
-        // Lưu tuyến vừa tra để dùng khi đặt hàng
+                <div><strong>🚩 Điểm đi:</strong> ${tuyen.diemDi}</div>
+                <div><strong>🏁 Điểm đến:</strong> ${tuyen.diemDen}</div>
+                <div><strong>🛣️ Quãng đường:</strong> ${tuyen.km} km</div>
+                <div class="price-row"><span>🚗 Tiện chuyến</span><span class="price-tc">${formatVND(tuyen.giaTienChuyen)}</span></div>
+                <div class="price-row"><span>🚙 Bao xe</span><span class="price-bx">${formatVND(tuyen.giaBaoXe)}</span></div>
+            </div>`;
         window.lastQueriedRoute = tuyen;
     }
     
-    // Đổi chiều điểm đi và điểm đến
-    function doiViTri() {
-        const temp = diemDiInput.value;
-        diemDiInput.value = diemDenInput.value;
-        diemDenInput.value = temp;
-        traCuuGia();
-    }
+    function doiViTri() { const temp = diemDiInput.value; diemDiInput.value = diemDenInput.value; diemDenInput.value = temp; traCuuGia(); }
     
-    // ========== 2. ĐẶT XE (GỬI DỮ LIỆU ĐẾN APPS SCRIPT) ==========
     async function datXe() {
-        const hoTen = document.getElementById('hoTen').value.trim();
-        const sdt = document.getElementById('sdt').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const ngayDi = document.getElementById('ngayDi').value;
-        const gioDi = document.getElementById('gioDi').value;
-        const diemDi = diemDiInput.value.trim();
-        const diemDen = diemDenInput.value.trim();
-        const loaiXeRadio = document.querySelector('input[name="loaiXe"]:checked');
-        const loaiXe = loaiXeRadio ? loaiXeRadio.value : "tien_chuyen";
+        const hoTen = document.getElementById('hoTen').value.trim(), sdt = document.getElementById('sdt').value.trim(), email = document.getElementById('email').value.trim();
+        const ngayDi = document.getElementById('ngayDi').value, gioDi = document.getElementById('gioDi').value, diemDi = diemDiInput.value.trim(), diemDen = diemDenInput.value.trim();
+        const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
+        if (!hoTen || !sdt || !ngayDi || !gioDi) { alert("Vui lòng nhập đủ thông tin"); return; }
         
-        // Validate thông tin bắt buộc
-        if (!hoTen || !sdt || !ngayDi || !gioDi) {
-            alert("Vui lòng nhập đầy đủ HỌ TÊN, SỐ ĐIỆN THOẠI, NGÀY và GIỜ ĐI");
-            return;
-        }
-        if (!diemDi || !diemDen) {
-            alert("Vui lòng nhập điểm đi và điểm đến (tra cứu trước nếu cần)");
-            return;
-        }
-        if (normalizePlace(diemDi) === normalizePlace(diemDen)) {
-            alert("Điểm đi và điểm đến không hợp lệ (trùng nhau)");
-            return;
-        }
-        const phoneRegex = /^[0-9]{9,11}$/;
-        if (!phoneRegex.test(sdt)) {
-            alert("Số điện thoại không hợp lệ (9-11 chữ số)");
-            return;
-        }
-        
-        // Xác định tuyến từ lastQueriedRoute hoặc tìm lại
         let tuyen = window.lastQueriedRoute;
-        const diNorm = normalizePlace(diemDi);
-        const denNorm = normalizePlace(diemDen);
-        if (!tuyen || !((normalizePlace(tuyen.diemDi) === diNorm && normalizePlace(tuyen.diemDen) === denNorm) || (normalizePlace(tuyen.diemDi) === denNorm && normalizePlace(tuyen.diemDen) === diNorm))) {
-            tuyen = danhSachTuyen.find(t => {
-                const tDi = normalizePlace(t.diemDi);
-                const tDen = normalizePlace(t.diemDen);
-                return (tDi === diNorm && tDen === denNorm) || (tDi === denNorm && tDen === diNorm);
-            });
-        }
-        
-        if (!tuyen) {
-            alert("Không tìm thấy giá cho tuyến này, vui lòng tra cứu lại trước khi đặt.");
-            return;
-        }
+        if (!tuyen) { alert("Vui lòng tra cứu giá trước khi đặt"); return; }
         
         const loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
-        let giaTri = loaiXe === "tien_chuyen" ? tuyen.giaTienChuyen : tuyen.giaBaoXe;
-        if (giaTri === 0) {
-            alert(`Rất tiếc, loại hình "${loaiXeText}" chưa có giá niêm yết cho tuyến này. Vui lòng liên hệ CSKH.`);
-            return;
-        }
+        const giaTri = loaiXe === "tien_chuyen" ? tuyen.giaTienChuyen : tuyen.giaBaoXe;
+        if (!confirm(`XÁC NHẬN ĐẶT XE ${loaiXeText}\n👤 ${hoTen} - ${sdt}\n🚏 ${diemDi} → ${diemDen}\n📅 ${ngayDi} ${gioDi}\n💰 Giá: ${giaTri.toLocaleString('vi-VN')}đ`)) return;
         
-        const confirmMess = `XÁC NHẬN ĐẶT XE ${loaiXeText.toUpperCase()}
-        👤 ${hoTen} - ${sdt}
-        🚏 ${diemDi} → ${diemDen}
-        📅 ${ngayDi} lúc ${gioDi}
-        💰 Giá: ${giaTri.toLocaleString('vi-VN')}đ
-        Nhấn OK để gửi đơn hàng.`;
-        
-        if (!confirm(confirmMess)) return;
-        
-        thongBaoDiv.innerHTML = '⏳ Đang gửi yêu cầu đặt xe đến hệ thống...';
-        thongBaoDiv.className = 'toast-message loading';
-        
+        thongBaoDiv.innerHTML = '⏳ Đang gửi...'; thongBaoDiv.className = 'toast-message loading';
         try {
-            // Gửi POST request với mode 'no-cors' vì Apps Script không yêu cầu CORS phức tạp
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'createBooking',
-                    hoTen: hoTen,
-                    sdt: sdt,
-                    email: email || "",
-                    diemDi: diemDi,
-                    diemDen: diemDen,
-                    ngayDi: ngayDi,
-                    gioDi: gioDi,
-                    loaiXe: loaiXeText,
-                    giaTri: giaTri,
-                    timestamp: new Date().toISOString()
-                })
-            });
-            
-            // Với mode no-cors, không thể đọc response nhưng thông thường script vẫn ghi thành công
-            thongBaoDiv.innerHTML = '✅ Đặt xe thành công! Chúng tôi sẽ liên hệ xác nhận trong ít phút. Cảm ơn bạn đã sử dụng dịch vụ.';
-            thongBaoDiv.className = 'toast-message success';
-            
-            // Reset một số trường sau khi đặt
-            document.getElementById('hoTen').value = '';
-            document.getElementById('sdt').value = '';
-            document.getElementById('email').value = '';
-            // Giữ nguyên ngày giờ mặc định nhưng reset về hôm nay + 8h
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('ngayDi').value = today;
-            document.getElementById('gioDi').value = '08:00';
-            // Không reset điểm đi/để để tiện đặt tiếp nhưng xóa lastRoute
-            window.lastQueriedRoute = null;
-            
-            setTimeout(() => {
-                if (thongBaoDiv.innerHTML.includes('thành công')) {
-                    thongBaoDiv.innerHTML = '';
-                    thongBaoDiv.className = '';
-                }
-            }, 6000);
-        } catch (err) {
-            console.error("Lỗi gửi đặt xe:", err);
-            thongBaoDiv.innerHTML = '❌ Lỗi kết nối đến máy chủ, vui lòng thử lại sau.';
-            thongBaoDiv.className = 'toast-message error';
-            setTimeout(() => {
-                if (thongBaoDiv.innerHTML.includes('Lỗi')) {
-                    thongBaoDiv.innerHTML = '';
-                    thongBaoDiv.className = '';
-                }
-            }, 5000);
-        }
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'createBooking', hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi, loaiXe: loaiXeText, giaTri, timestamp: new Date().toISOString() }) });
+            thongBaoDiv.innerHTML = '✅ Đặt xe thành công!'; thongBaoDiv.className = 'toast-message success';
+            document.getElementById('hoTen').value = ''; document.getElementById('sdt').value = ''; document.getElementById('email').value = '';
+            setTimeout(() => { thongBaoDiv.innerHTML = ''; }, 5000);
+        } catch(err) { thongBaoDiv.innerHTML = '❌ Lỗi kết nối'; thongBaoDiv.className = 'toast-message error'; }
     }
     
-    // ========== KHỞI TẠO: set ngày giờ mặc định ==========
     function setDefaultDateTime() {
         const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2,'0');
-        const dd = String(today.getDate()).padStart(2,'0');
-        const ngayDiInput = document.getElementById('ngayDi');
-        if (ngayDiInput) ngayDiInput.value = `${yyyy}-${mm}-${dd}`;
-        const gioDiInput = document.getElementById('gioDi');
-        if (gioDiInput) gioDiInput.value = '08:00';
+        document.getElementById('ngayDi').value = today.toISOString().split('T')[0];
+        document.getElementById('gioDi').value = '08:00';
     }
     
-    // Gán sự kiện
     document.getElementById('btnTraCuu').addEventListener('click', traCuuGia);
     document.getElementById('btnDoiViTri').addEventListener('click', doiViTri);
     document.getElementById('btnDatXe').addEventListener('click', datXe);
     
-    // Tải dữ liệu và set mặc định
-    loadDataFromSheet().then(() => {
-        setDefaultDateTime();
-    }).catch(() => setDefaultDateTime());
+    loadDataFromSheet().then(setDefaultDateTime);
 </script>
 </body>
 </html>
