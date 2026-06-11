@@ -3,51 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Đặt xe - Xem danh sách điểm có sẵn</title>
+<title>Đặt xe - Không phân biệt hoa/thường</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
     body { background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%); padding: 20px; min-height: 100vh; }
     .container { max-width: 750px; margin: 0 auto; background: white; border-radius: 32px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2); overflow: hidden; }
     .header { background: #0d6efd; padding: 24px 28px; color: white; }
-    .header h1 { font-size: 1.9rem; display: flex; align-items: center; gap: 12px; justify-content: space-between; }
-    .badge { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 40px; font-size: 0.85rem; }
+    .header h1 { font-size: 1.9rem; display: flex; align-items: center; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+    .badge { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 40px; font-size: 0.85rem; font-weight: normal; }
     .content { padding: 28px; }
     .form-group { margin-bottom: 20px; position: relative; }
-    label { font-weight: 600; display: block; margin-bottom: 8px; color: #1e293b; }
-    input { width: 100%; padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 1rem; transition: 0.2s; }
+    label { font-weight: 600; display: block; margin-bottom: 8px; color: #1e293b; font-size: 0.9rem; }
+    input { width: 100%; padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 1rem; transition: 0.2s; background: white; }
     input:focus { outline: none; border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13,110,253,0.15); }
     .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 20px 20px; max-height: 250px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    .autocomplete-list div { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+    .autocomplete-list div { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: 0.1s; }
     .autocomplete-list div:hover { background: #0d6efd; color: white; }
     .btn-group { display: flex; gap: 12px; margin: 25px 0 15px; }
-    button { background: #0d6efd; color: white; border: none; padding: 12px 18px; border-radius: 40px; font-weight: bold; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    button:hover { background: #0b5ed7; }
+    button { background: #0d6efd; color: white; border: none; padding: 12px 18px; border-radius: 40px; font-weight: bold; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+    button:hover { background: #0b5ed7; transform: scale(0.98); }
     .btn-outline { background: white; color: #0d6efd; border: 1.5px solid #0d6efd; }
-    .card-result { background: #f8fafc; border-radius: 28px; padding: 20px; margin: 20px 0; border-left: 6px solid #0d6efd; }
-    .price-row { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
+    .btn-outline:hover { background: #eef6ff; transform: none; }
+    .card-result { background: #f8fafc; border-radius: 28px; padding: 20px; margin: 20px 0; border-left: 6px solid #0d6efd; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .price-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
     .price-tc { font-size: 1.7rem; font-weight: 800; color: #0d6efd; }
     .price-bx { font-size: 1.7rem; font-weight: 800; color: #dc2626; }
-    .radio-group { background: #f1f5f9; padding: 12px 18px; border-radius: 60px; display: inline-flex; gap: 24px; margin: 10px 0 20px; }
-    .radio-group label { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; margin: 0; }
+    .radio-group { background: #f1f5f9; padding: 12px 18px; border-radius: 60px; display: inline-flex; gap: 24px; margin: 10px 0 20px; flex-wrap: wrap; }
+    .radio-group label { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; margin: 0; cursor: pointer; }
     hr { margin: 28px 0; border: none; height: 2px; background: linear-gradient(to right, #cbd5e1, transparent); }
-    .toast-message { margin-top: 20px; padding: 14px; border-radius: 60px; text-align: center; font-weight: 500; }
+    .toast-message { margin-top: 20px; padding: 14px; border-radius: 60px; text-align: center; font-weight: 500; transition: 0.2s; }
     .success { background: #dcfce7; color: #15803d; border-left: 5px solid #22c55e; }
     .error { background: #fee2e2; color: #b91c1c; border-left: 5px solid #ef4444; }
     .loading { background: #fff3cd; color: #856404; }
-    .info-box { background: #e0f2fe; padding: 12px; border-radius: 16px; margin-bottom: 20px; font-size: 0.85rem; color: #0369a1; }
-    .point-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .point-tag { background: #e2e8f0; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; color: #1e293b; cursor: pointer; transition: 0.2s; }
-    .point-tag:hover { background: #0d6efd; color: white; }
+    .info-box { background: #e0f2fe; padding: 12px 16px; border-radius: 16px; margin-bottom: 20px; font-size: 0.85rem; color: #0369a1; border-left: 4px solid #0284c7; }
+    .point-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-height: 120px; overflow-y: auto; }
+    .point-tag { background: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; color: #0f172a; cursor: pointer; transition: 0.2s; border: 1px solid #b9d0f0; }
+    .point-tag:hover { background: #0d6efd; color: white; border-color: #0d6efd; transform: scale(1.02); }
     .note { font-size: 0.75rem; text-align: center; color: #64748b; margin-top: 24px; }
     footer { background: #f8fafc; text-align: center; padding: 16px; font-size: 0.75rem; color: #475569; border-top: 1px solid #e2e8f0; }
+    .example-badge { background: #f1f5f9; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; color: #475569; margin-left: 8px; }
     @media (max-width: 550px) { .content { padding: 20px; } .price-tc, .price-bx { font-size: 1.3rem; } }
 </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>🚖 Vận tải kết nối<span class="badge">Tiện chuyến · Bao xe</span></h1>
-        <p style="margin-top: 8px; opacity: 0.9;">📋 Click vào ô để xem danh sách điểm có sẵn</p>
+        <h1>
+            🚖 Vận tải kết nối
+            <span class="badge">Tiện chuyến · Bao xe</span>
+        </h1>
+        <p style="margin-top: 8px; opacity: 0.9;">✅ Không phân biệt chữ hoa/thường | Click để xem gợi ý</p>
     </div>
     <div class="content">
         <div class="info-box" id="infoBox">
@@ -55,7 +60,7 @@
         </div>
 
         <div class="form-group">
-            <label>📍 Điểm đi</label>
+            <label>📍 Điểm đi <span class="example-badge">VD: bắc kạn, BẮC KẠN, Bắc Kạn đều được</span></label>
             <div class="input-wrapper">
                 <input type="text" id="diemDi" placeholder="Nhập hoặc chọn từ danh sách bên dưới" autocomplete="off">
                 <div id="autocompleteDi" class="autocomplete-list"></div>
@@ -63,7 +68,7 @@
         </div>
 
         <div class="form-group">
-            <label>📍 Điểm đến</label>
+            <label>📍 Điểm đến <span class="example-badge">VD: na rì, NA RÌ, Na Rì đều được</span></label>
             <div class="input-wrapper">
                 <input type="text" id="diemDen" placeholder="Nhập hoặc chọn từ danh sách bên dưới" autocomplete="off">
                 <div id="autocompleteDen" class="autocomplete-list"></div>
@@ -81,23 +86,23 @@
 
         <div class="radio-group">
             <label><input type="radio" name="loaiXe" value="tien_chuyen" checked> 🚗 Tiện chuyến</label>
-            <label><input type="radio" name="loaiXe" value="bao_xe"> 🚙 Bao xe</label>
+            <label><input type="radio" name="loaiXe" value="bao_xe"> 🚙 Bao xe (riêng)</label>
         </div>
 
         <div class="form-group"><label>👤 Họ và tên</label><input type="text" id="hoTen" placeholder="Nguyễn Văn A"></div>
         <div class="form-group"><label>📞 Số điện thoại</label><input type="tel" id="sdt" placeholder="0912345678"></div>
-        <div class="form-group"><label>📧 Email</label><input type="email" id="email" placeholder="example@gmail.com"></div>
+        <div class="form-group"><label>📧 Email (nhận xác nhận)</label><input type="email" id="email" placeholder="example@gmail.com (tùy chọn)"></div>
         
-        <div style="display: flex; gap: 12px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <div style="flex:1"><label>📅 Ngày đi</label><input type="date" id="ngayDi"></div>
             <div style="flex:1"><label>⏰ Giờ đi</label><input type="time" id="gioDi"></div>
         </div>
 
         <button id="btnDatXe" style="width: 100%; margin-top: 24px;">🚀 Xác nhận đặt xe</button>
         <div id="thongBao"></div>
-        <div class="note">* Đặt xe thành công sẽ được ghi vào Google Sheet quản lý.</div>
+        <div class="note">* Đặt xe thành công sẽ được ghi vào Google Sheet quản lý. CSKH sẽ gọi xác nhận.</div>
     </div>
-    <footer>⚡ Bảng giá được cập nhật tự động từ Google Sheet</footer>
+    <footer>⚡ Bảng giá được cập nhật tự động từ Google Sheet | Không phân biệt chữ hoa/thường</footer>
 </div>
 
 <script>
@@ -115,9 +120,22 @@
     const thongBaoDiv = document.getElementById('thongBao');
     const infoBox = document.getElementById('infoBox');
     
+    // Hàm chuẩn hóa: loại bỏ dấu tiếng Việt, viết thường, xóa khoảng trắng thừa
     function normalizePlace(str) {
         if (!str) return "";
-        return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").replace(/\s+/g, " ").trim();
+        let normalized = str.toLowerCase().trim();
+        // Bỏ dấu tiếng Việt
+        normalized = normalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        normalized = normalized.replace(/đ/g, "d").replace(/Đ/g, "d");
+        // Xóa khoảng trắng thừa
+        normalized = normalized.replace(/\s+/g, " ");
+        return normalized;
+    }
+    
+    // So sánh 2 địa điểm không phân biệt hoa/thường, có dấu/không dấu
+    function isSameLocation(loc1, loc2) {
+        if (!loc1 || !loc2) return false;
+        return normalizePlace(loc1) === normalizePlace(loc2);
     }
     
     async function loadDataFromSheet() {
@@ -167,29 +185,35 @@
                 return;
             }
             
+            // Tạo danh sách địa danh duy nhất (giữ nguyên bản gốc)
             const diaDanhSet = new Set();
-            danhSachTuyen.forEach(t => { diaDanhSet.add(t.diemDi); diaDanhSet.add(t.diemDen); });
+            danhSachTuyen.forEach(t => { 
+                diaDanhSet.add(t.diemDi); 
+                diaDanhSet.add(t.diemDen); 
+            });
             danhSachDiaDanh = Array.from(diaDanhSet).sort((a,b) => a.localeCompare(b, 'vi'));
             
-            // Hiển thị danh sách điểm có sẵn dạng tag
+            // Hiển thị danh sách điểm có sẵn
             infoBox.innerHTML = `
                 <strong>✅ Đã tải ${danhSachTuyen.length} tuyến xe | ${danhSachDiaDanh.length} điểm</strong>
                 <div class="point-list" id="pointList">
-                    ${danhSachDiaDanh.map(point => `<span class="point-tag" data-point="${point}">${point}</span>`).join('')}
+                    ${danhSachDiaDanh.map(point => `<span class="point-tag" data-point="${point.replace(/"/g, '&quot;')}">${point}</span>`).join('')}
                 </div>
-                <small style="display:block; margin-top:8px;">💡 Click vào tên điểm để chọn nhanh</small>
+                <small style="display:block; margin-top:8px;">💡 Click vào tên điểm để chọn nhanh (không cần nhập đúng hoa/thường)</small>
             `;
             
             // Gắn sự kiện click cho các tag
             document.querySelectorAll('.point-tag').forEach(tag => {
                 tag.addEventListener('click', (e) => {
                     const point = tag.getAttribute('data-point');
+                    // Xác định ô nào đang được focus hoặc ô nào trống
                     if (document.activeElement === diemDiInput || diemDiInput.value === "") {
                         diemDiInput.value = point;
+                        if (diemDenInput.value) traCuuGia();
                     } else {
                         diemDenInput.value = point;
+                        if (diemDiInput.value) traCuuGia();
                     }
-                    traCuuGia();
                 });
             });
             
@@ -212,9 +236,14 @@
             let current = '';
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
-                if (char === '"') inQuote = !inQuote;
-                else if (char === ',' && !inQuote) { row.push(current.trim()); current = ''; }
-                else current += char;
+                if (char === '"') {
+                    inQuote = !inQuote;
+                } else if (char === ',' && !inQuote) {
+                    row.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
             }
             row.push(current.trim());
             rows.push(row);
@@ -223,98 +252,236 @@
     }
     
     function setupAutocomplete(inputElement, listElement) {
-        inputElement.addEventListener('input', function(e) {
-            const keyword = this.value.toLowerCase().trim();
+        const showSuggestions = (keyword) => {
             listElement.innerHTML = '';
-            let filtered = keyword === "" ? danhSachDiaDanh.slice(0, 15) : danhSachDiaDanh.filter(p => p.toLowerCase().includes(keyword) || normalizePlace(p).includes(normalizePlace(keyword)));
+            if (!danhSachDiaDanh.length) return;
+            
+            const searchNorm = normalizePlace(keyword);
+            let filtered = [];
+            
+            if (keyword === "") {
+                filtered = danhSachDiaDanh.slice(0, 15);
+            } else {
+                // Tìm kiếm không phân biệt hoa/thường, có dấu/không dấu
+                filtered = danhSachDiaDanh.filter(place => {
+                    return normalizePlace(place).includes(searchNorm) || 
+                           place.toLowerCase().includes(keyword.toLowerCase());
+                }).slice(0, 15);
+            }
+            
             if (filtered.length === 0) {
                 const div = document.createElement('div');
-                div.textContent = '📭 Không tìm thấy điểm nào';
+                div.textContent = '📭 Không tìm thấy điểm nào phù hợp';
                 div.style.color = '#94a3b8';
                 div.style.cursor = 'default';
+                div.style.padding = '12px 16px';
                 listElement.appendChild(div);
             } else {
                 filtered.forEach(place => {
                     const div = document.createElement('div');
                     div.textContent = place;
-                    div.addEventListener('click', () => { inputElement.value = place; listElement.style.display = 'none'; traCuuGia(); });
+                    div.addEventListener('click', () => { 
+                        inputElement.value = place; 
+                        listElement.style.display = 'none'; 
+                        traCuuGia(); 
+                    });
                     listElement.appendChild(div);
                 });
             }
             listElement.style.display = filtered.length > 0 ? 'block' : 'none';
-        });
+        };
         
+        inputElement.addEventListener('input', (e) => showSuggestions(e.target.value));
         inputElement.addEventListener('focus', () => {
-            if (danhSachDiaDanh.length > 0) inputElement.dispatchEvent(new Event('input'));
+            if (danhSachDiaDanh.length) showSuggestions(inputElement.value);
         });
-        
         document.addEventListener('click', (e) => {
-            if (!inputElement.contains(e.target) && !listElement.contains(e.target)) listElement.style.display = 'none';
+            if (!inputElement.contains(e.target) && !listElement.contains(e.target)) {
+                listElement.style.display = 'none';
+            }
         });
     }
     
+    // Hàm tra cứu KHÔNG phân biệt hoa/thường
     function traCuuGia() {
         let di = diemDiInput.value.trim();
         let den = diemDenInput.value.trim();
-        if (!di || !den) { ketQuaDiv.innerHTML = '<div class="toast-message error">❗ Vui lòng nhập điểm đi và đến</div>'; return; }
-        if (normalizePlace(di) === normalizePlace(den)) { ketQuaDiv.innerHTML = '<div class="toast-message error">📍 Điểm đi và đến không thể trùng</div>'; return; }
         
-        const diNorm = normalizePlace(di), denNorm = normalizePlace(den);
-        const tuyen = danhSachTuyen.find(t => (normalizePlace(t.diemDi) === diNorm && normalizePlace(t.diemDen) === denNorm) || (normalizePlace(t.diemDi) === denNorm && normalizePlace(t.diemDen) === diNorm));
+        if (!di || !den) {
+            ketQuaDiv.innerHTML = '<div class="toast-message error">❗ Vui lòng nhập đầy đủ điểm đi và điểm đến</div>';
+            return;
+        }
+        
+        if (isSameLocation(di, den)) {
+            ketQuaDiv.innerHTML = '<div class="toast-message error">📍 Điểm đi và điểm đến không thể trùng nhau</div>';
+            return;
+        }
+        
+        // Tìm tuyến không phân biệt chiều và không phân biệt hoa/thường
+        const tuyen = danhSachTuyen.find(t => {
+            return (isSameLocation(t.diemDi, di) && isSameLocation(t.diemDen, den)) ||
+                   (isSameLocation(t.diemDi, den) && isSameLocation(t.diemDen, di));
+        });
         
         if (!tuyen) {
-            ketQuaDiv.innerHTML = `<div class="toast-message error">🚫 Không tìm thấy tuyến: ${di} → ${den}<br><br>📋 Các điểm có sẵn: ${danhSachDiaDanh.join(', ')}</div>`;
+            ketQuaDiv.innerHTML = `
+                <div class="toast-message error">
+                    🚫 Không tìm thấy tuyến: <strong>${di}</strong> → <strong>${den}</strong><br><br>
+                    📋 <strong>Các điểm có sẵn:</strong> ${danhSachDiaDanh.join(', ')}<br><br>
+                    💡 Gợi ý: Click vào tên điểm trong khung xanh để chọn chính xác.
+                </div>
+            `;
             window.lastQueriedRoute = null;
             return;
         }
         
         const formatVND = (num) => num.toLocaleString('vi-VN') + 'đ';
+        
         ketQuaDiv.innerHTML = `
             <div class="card-result">
-                <div><strong>🚩 Điểm đi:</strong> ${tuyen.diemDi}</div>
-                <div><strong>🏁 Điểm đến:</strong> ${tuyen.diemDen}</div>
-                <div><strong>🛣️ Quãng đường:</strong> ${tuyen.km} km</div>
-                <div class="price-row"><span>🚗 Tiện chuyến</span><span class="price-tc">${formatVND(tuyen.giaTienChuyen)}</span></div>
-                <div class="price-row"><span>🚙 Bao xe</span><span class="price-bx">${formatVND(tuyen.giaBaoXe)}</span></div>
-            </div>`;
+                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px;">
+                    <span><strong>🚩 Điểm đi:</strong> ${tuyen.diemDi}</span>
+                    <span><strong>🏁 Điểm đến:</strong> ${tuyen.diemDen}</span>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <strong>🛣️ Quãng đường:</strong> ${tuyen.km} km
+                </div>
+                <div class="price-row">
+                    <span>🚗 <strong>Tiện chuyến</strong></span>
+                    <span class="price-tc">${formatVND(tuyen.giaTienChuyen)}</span>
+                </div>
+                <div class="price-row">
+                    <span>🚙 <strong>Bao xe</strong></span>
+                    <span class="price-bx">${formatVND(tuyen.giaBaoXe)}</span>
+                </div>
+            </div>
+        `;
         window.lastQueriedRoute = tuyen;
     }
     
-    function doiViTri() { const temp = diemDiInput.value; diemDiInput.value = diemDenInput.value; diemDenInput.value = temp; traCuuGia(); }
+    function doiViTri() {
+        const temp = diemDiInput.value;
+        diemDiInput.value = diemDenInput.value;
+        diemDenInput.value = temp;
+        traCuuGia();
+    }
     
     async function datXe() {
-        const hoTen = document.getElementById('hoTen').value.trim(), sdt = document.getElementById('sdt').value.trim(), email = document.getElementById('email').value.trim();
-        const ngayDi = document.getElementById('ngayDi').value, gioDi = document.getElementById('gioDi').value, diemDi = diemDiInput.value.trim(), diemDen = diemDenInput.value.trim();
-        const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
-        if (!hoTen || !sdt || !ngayDi || !gioDi) { alert("Vui lòng nhập đủ thông tin"); return; }
+        const hoTen = document.getElementById('hoTen').value.trim();
+        const sdt = document.getElementById('sdt').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const ngayDi = document.getElementById('ngayDi').value;
+        const gioDi = document.getElementById('gioDi').value;
+        const diemDi = diemDiInput.value.trim();
+        const diemDen = diemDenInput.value.trim();
+        const loaiXeRadio = document.querySelector('input[name="loaiXe"]:checked');
+        const loaiXe = loaiXeRadio ? loaiXeRadio.value : "tien_chuyen";
+        
+        if (!hoTen || !sdt || !ngayDi || !gioDi) {
+            alert("Vui lòng nhập HỌ TÊN, SỐ ĐIỆN THOẠI, NGÀY và GIỜ ĐI");
+            return;
+        }
+        if (!diemDi || !diemDen) {
+            alert("Vui lòng nhập điểm đi và điểm đến");
+            return;
+        }
         
         let tuyen = window.lastQueriedRoute;
-        if (!tuyen) { alert("Vui lòng tra cứu giá trước khi đặt"); return; }
+        if (!tuyen || !(isSameLocation(tuyen.diemDi, diemDi) && isSameLocation(tuyen.diemDen, diemDen)) && 
+            !(isSameLocation(tuyen.diemDi, diemDen) && isSameLocation(tuyen.diemDen, diemDi))) {
+            // Tìm lại tuyến
+            tuyen = danhSachTuyen.find(t => {
+                return (isSameLocation(t.diemDi, diemDi) && isSameLocation(t.diemDen, diemDen)) ||
+                       (isSameLocation(t.diemDi, diemDen) && isSameLocation(t.diemDen, diemDi));
+            });
+        }
+        
+        if (!tuyen) {
+            alert("Không tìm thấy giá cho tuyến này, vui lòng tra cứu trước khi đặt");
+            return;
+        }
         
         const loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
         const giaTri = loaiXe === "tien_chuyen" ? tuyen.giaTienChuyen : tuyen.giaBaoXe;
-        if (!confirm(`XÁC NHẬN ĐẶT XE ${loaiXeText}\n👤 ${hoTen} - ${sdt}\n🚏 ${diemDi} → ${diemDen}\n📅 ${ngayDi} ${gioDi}\n💰 Giá: ${giaTri.toLocaleString('vi-VN')}đ`)) return;
         
-        thongBaoDiv.innerHTML = '⏳ Đang gửi...'; thongBaoDiv.className = 'toast-message loading';
+        if (giaTri === 0) {
+            alert(`Rất tiếc, loại hình "${loaiXeText}" chưa có giá cho tuyến này`);
+            return;
+        }
+        
+        const confirmMess = `XÁC NHẬN ĐẶT XE ${loaiXeText.toUpperCase()}
+        👤 ${hoTen} - ${sdt}
+        🚏 ${diemDi} → ${diemDen}
+        📅 ${ngayDi} lúc ${gioDi}
+        💰 Giá: ${giaTri.toLocaleString('vi-VN')}đ
+        Nhấn OK để gửi đơn hàng.`;
+        
+        if (!confirm(confirmMess)) return;
+        
+        thongBaoDiv.innerHTML = '⏳ Đang gửi yêu cầu đặt xe...';
+        thongBaoDiv.className = 'toast-message loading';
+        
         try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'createBooking', hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi, loaiXe: loaiXeText, giaTri, timestamp: new Date().toISOString() }) });
-            thongBaoDiv.innerHTML = '✅ Đặt xe thành công!'; thongBaoDiv.className = 'toast-message success';
-            document.getElementById('hoTen').value = ''; document.getElementById('sdt').value = ''; document.getElementById('email').value = '';
-            setTimeout(() => { thongBaoDiv.innerHTML = ''; }, 5000);
-        } catch(err) { thongBaoDiv.innerHTML = '❌ Lỗi kết nối'; thongBaoDiv.className = 'toast-message error'; }
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'createBooking',
+                    hoTen: hoTen,
+                    sdt: sdt,
+                    email: email,
+                    diemDi: diemDi,
+                    diemDen: diemDen,
+                    ngayDi: ngayDi,
+                    gioDi: gioDi,
+                    loaiXe: loaiXeText,
+                    giaTri: giaTri,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            
+            thongBaoDiv.innerHTML = '✅ Đặt xe thành công! Chúng tôi sẽ liên hệ xác nhận trong ít phút.';
+            thongBaoDiv.className = 'toast-message success';
+            
+            // Reset form
+            document.getElementById('hoTen').value = '';
+            document.getElementById('sdt').value = '';
+            document.getElementById('email').value = '';
+            
+            setTimeout(() => {
+                thongBaoDiv.innerHTML = '';
+                thongBaoDiv.className = '';
+            }, 5000);
+        } catch (err) {
+            console.error(err);
+            thongBaoDiv.innerHTML = '❌ Lỗi kết nối, vui lòng thử lại sau.';
+            thongBaoDiv.className = 'toast-message error';
+            setTimeout(() => {
+                thongBaoDiv.innerHTML = '';
+                thongBaoDiv.className = '';
+            }, 5000);
+        }
     }
     
     function setDefaultDateTime() {
         const today = new Date();
-        document.getElementById('ngayDi').value = today.toISOString().split('T')[0];
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('ngayDi').value = `${yyyy}-${mm}-${dd}`;
         document.getElementById('gioDi').value = '08:00';
     }
     
+    // Gán sự kiện
     document.getElementById('btnTraCuu').addEventListener('click', traCuuGia);
     document.getElementById('btnDoiViTri').addEventListener('click', doiViTri);
     document.getElementById('btnDatXe').addEventListener('click', datXe);
     
-    loadDataFromSheet().then(setDefaultDateTime);
+    // Khởi tạo
+    loadDataFromSheet().then(() => {
+        setDefaultDateTime();
+    }).catch(() => setDefaultDateTime());
 </script>
 </body>
 </html>
