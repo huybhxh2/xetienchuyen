@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>Admin - Vận tải kết nối</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f0f2f5; min-height: 100vh; }
+    
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
+    /* Header */
+    .admin-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px 30px; border-radius: 16px; color: white; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .admin-header h1 { font-size: 1.6rem; display: flex; align-items: center; gap: 10px; }
+    .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 20px; border-radius: 30px; color: white; cursor: pointer; font-weight: 600; }
+    .logout-btn:hover { background: rgba(255,255,255,0.3); }
+    
+    /* Stats Cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #0066cc; }
+    .stat-card .label { font-size: 0.8rem; color: #6b7a8a; margin-bottom: 8px; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; color: #1e2a3a; }
+    
+    /* Tabs */
+    .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .admin-tab { background: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #6b7a8a; }
+    .admin-tab.active { background: #0066cc; color: white; }
+    
+    /* Tables */
+    .table-container { background: white; border-radius: 20px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #eef2f6; }
+    th { background: #f8fafc; font-weight: 600; color: #1e2a3a; }
+    tr:hover { background: #f8fafc; }
+    
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-blocked { background: #fee2e2; color: #991b1b; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #e0e7ff; color: #3730a3; }
+    
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 4px 8px; border-radius: 8px; transition: 0.2s; }
+    .action-btn:hover { background: #eef2f6; }
+    .btn-block { color: #dc2626; }
+    .btn-unlock { color: #10b981; }
+    .btn-view { color: #0066cc; }
+    
+    .login-box { max-width: 400px; margin: 100px auto; background: white; border-radius: 24px; padding: 32px; text-align: center; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); }
+    .login-box input { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 14px; margin: 16px 0; font-size: 1rem; }
+    .login-box button { background: #0066cc; color: white; border: none; padding: 14px; border-radius: 14px; width: 100%; font-weight: 600; cursor: pointer; }
+    
+    .refresh-btn { background: #eef2f6; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal-header { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); padding: 20px; color: white; border-radius: 24px 24px 0 0; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid #eef2f6; display: flex; gap: 12px; justify-content: flex-end; }
+    
+    .detail-row { display: flex; margin-bottom: 12px; }
+    .detail-label { width: 120px; font-weight: 600; color: #5a6874; }
+    .detail-value { flex: 1; color: #1e2a3a; }
+    
+    @media (max-width: 768px) { .admin-container { padding: 16px; } th, td { padding: 10px 12px; font-size: 0.85rem; } }
+</style>
+</head>
+<body>
+<div id="app">
+    <!-- Login Form -->
+    <div id="loginPanel" class="login-box">
+        <div style="font-size: 3rem; margin-bottom: 16px;">👨‍💼</div>
+        <h2>Admin Vận tải kết nối</h2>
+        <p style="color: #6b7a8a; margin: 8px 0;">Nhập mã bảo mật để truy cập</p>
+        <input type="password" id="adminKeyInput" placeholder="Mã bảo mật">
+        <button onclick="adminLogin()">Đăng nhập</button>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminPanel" style="display: none;">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>👨‍💼 Vận tải kết nối - Quản trị</h1>
+                <button class="logout-btn" onclick="adminLogout()">Đăng xuất</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="drivers">👨‍✈️ Quản lý tài xế</button>
+                <button class="admin-tab" data-tab="bookings">📋 Quản lý đơn hàng</button>
+            </div>
+
+            <!-- Drivers Table -->
+            <div id="driversTab" class="table-container">
+                <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <h3>📊 Danh sách tài xế</h3>
+                    <button class="refresh-btn" onclick="loadAllData()">🔄 Làm mới</button>
+                </div>
+                <div id="driversTable"></div>
+            </div>
+
+            <!-- Bookings Table -->
+            <div id="bookingsTab" class="table-container" style="display: none;">
+                <div style="padding: 16px;">
+                    <h3>📋 Danh sách đơn hàng</h3>
+                    <button class="refresh-btn" onclick="loadAllData()">🔄 Làm mới</button>
+                </div>
+                <div id="bookingsTable"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem chi tiết -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📋 Chi tiết</h3>
+        </div>
+        <div class="modal-body" id="detailBody"></div>
+        <div class="modal-footer">
+            <button class="action-btn" onclick="closeModal()" style="background:#eef2f6; padding:8px 20px; border-radius:12px;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== CẤU HÌNH ====================
+    const API_URL = "https://script.google.com/macros/s/YOUR_API_URL/exec"; // 👈 THAY URL CỦA BẠN
+    const ADMIN_SECRET = "ADMIN_SECRET_KEY_2024";
+    
+    let adminLoggedIn = false;
+    let driversData = [];
+    let bookingsData = [];
+    
+    // ==================== ĐĂNG NHẬP ====================
+    function adminLogin() {
+        const key = document.getElementById('adminKeyInput').value;
+        if (key === ADMIN_SECRET) {
+            adminLoggedIn = true;
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadAllData();
+        } else {
+            alert("Mã bảo mật không đúng!");
+        }
+    }
+    
+    function adminLogout() {
+        adminLoggedIn = false;
+        document.getElementById('loginPanel').style.display = 'block';
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminKeyInput').value = '';
+    }
+    
+    // ==================== GỌI API ====================
+    async function callAPI(action, data = {}) {
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, adminKey: ADMIN_SECRET, ...data })
+            });
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error("API Error:", error);
+            return { status: "error", message: error.message };
+        }
+    }
+    
+    // ==================== LOAD DỮ LIỆU ====================
+    async function loadAllData() {
+        await loadDrivers();
+        await loadBookings();
+        updateStats();
+    }
+    
+    async function loadDrivers() {
+        const result = await callAPI("getAllDrivers");
+        if (result.status === "success" && result.data) {
+            driversData = result.data;
+            renderDriversTable();
+        } else {
+            document.getElementById('driversTable').innerHTML = '<div style="padding:40px; text-align:center;">❌ Không thể tải dữ liệu tài xế</div>';
+        }
+    }
+    
+    async function loadBookings() {
+        const result = await callAPI("getBookings");
+        if (result.status === "success" && result.data) {
+            bookingsData = result.data;
+            renderBookingsTable();
+        } else {
+            document.getElementById('bookingsTable').innerHTML = '<div style="padding:40px; text-align:center;">❌ Không thể tải dữ liệu đơn hàng</div>';
+        }
+    }
+    
+    // ==================== CẬP NHẬT TRẠNG THÁI ====================
+    async function updateDriverStatus(driverId, newStatus) {
+        const confirmMsg = newStatus === "blocked" ? "Khóa tài khoản này?" : "Mở khóa tài khoản này?";
+        if (!confirm(confirmMsg)) return;
+        
+        const result = await callAPI("updateDriverStatus", { driverId, newStatus });
+        if (result.status === "success") {
+            alert(result.message);
+            loadDrivers();
+        } else {
+            alert("Lỗi: " + result.message);
+        }
+    }
+    
+    async function updateBookingStatus(bookingId, newStatus) {
+        const result = await callAPI("updateBookingStatus", { bookingId, newStatus });
+        if (result.status === "success") {
+            loadBookings();
+            loadAllData();
+        } else {
+            alert("Lỗi: " + result.message);
+        }
+    }
+    
+    // ==================== HIỂN THỊ BẢNG ====================
+    function renderDriversTable() {
+        if (!driversData.length) {
+            document.getElementById('driversTable').innerHTML = '<div style="padding:40px; text-align:center;">📭 Chưa có tài xế nào</div>';
+            return;
+        }
+        
+        const html = `
+            <table>
+                <thead>
+                    <tr><th>STT</th><th>ID</th><th>Họ tên</th><th>SĐT</th><th>Email</th><th>Biển số</th><th>Loại xe</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody>
+                    ${driversData.map(d => `
+                        <tr>
+                            <td>${d.stt || ''}</td>
+                            <td>${d.id || ''}</td>
+                            <td>${d.name || ''}</td>
+                            <td>${d.phone || ''}</td>
+                            <td>${d.email || ''}</td>
+                            <td>${d.plate || ''}</td>
+                            <td>${d.carType || ''}</td>
+                            <td><span class="status-badge ${d.status === 'active' ? 'status-active' : 'status-blocked'}">${d.status === 'active' ? 'Hoạt động' : 'Bị khóa'}</span></td>
+                            <td>${d.createdAt || ''}</td>
+                            <td>
+                                <button class="action-btn" onclick="viewDriverDetail('${d.id}')" title="Xem chi tiết">👁️</button>
+                                ${d.status === 'active' ? 
+                                    `<button class="action-btn btn-block" onclick="updateDriverStatus('${d.id}', 'blocked')" title="Khóa">🔒</button>` : 
+                                    `<button class="action-btn btn-unlock" onclick="updateDriverStatus('${d.id}', 'active')" title="Mở khóa">🔓</button>`}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('driversTable').innerHTML = html;
+    }
+    
+    function renderBookingsTable() {
+        if (!bookingsData.length) {
+            document.getElementById('bookingsTable').innerHTML = '<div style="padding:40px; text-align:center;">📭 Chưa có đơn hàng nào</div>';
+            return;
+        }
+        
+        const statusMap = { pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
+        
+        const html = `
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Họ tên</th><th>SĐT</th><th>Điểm đi</th><th>Điểm đến</th><th>Ngày đi</th><th>Giờ đi</th><th>Loại xe</th><th>Giá</th><th>Trạng thái</th><th>Ngày đặt</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody>
+                    ${bookingsData.map(b => `
+                        <tr>
+                            <td>${b.id || ''}</td>
+                            <td>${b.hoTen || ''}</td>
+                            <td>${b.sdt || ''}</td>
+                            <td>${b.diemDi || ''}</td>
+                            <td>${b.diemDen || ''}</td>
+                            <td>${b.ngayDi || ''}</td>
+                            <td>${b.gioDi || ''}</td>
+                            <td>${b.loaiXe || ''}</td>
+                            <td>${Number(b.giaTri).toLocaleString('vi-VN')}đ</td>
+                            <td><span class="status-badge status-${b.status}">${statusMap[b.status] || b.status}</span></td>
+                            <td>${b.timestamp || ''}</td>
+                            <td>
+                                <button class="action-btn" onclick="viewBookingDetail('${b.id}')" title="Xem chi tiết">👁️</button>
+                                ${b.status === 'pending' ? `<button class="action-btn" onclick="updateBookingStatus('${b.id}', 'confirmed')" title="Xác nhận" style="color:#10b981;">✅</button>` : ''}
+                                ${b.status === 'pending' ? `<button class="action-btn" onclick="updateBookingStatus('${b.id}', 'cancelled')" title="Từ chối" style="color:#dc2626;">❌</button>` : ''}
+                                ${b.status === 'confirmed' ? `<button class="action-btn" onclick="updateBookingStatus('${b.id}', 'completed')" title="Hoàn thành" style="color:#0066cc;">✅</button>` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('bookingsTable').innerHTML = html;
+    }
+    
+    function updateStats() {
+        const activeDrivers = driversData.filter(d => d.status === 'active').length;
+        const blockedDrivers = driversData.filter(d => d.status === 'blocked').length;
+        const pendingBookings = bookingsData.filter(b => b.status === 'pending').length;
+        const confirmedBookings = bookingsData.filter(b => b.status === 'confirmed').length;
+        const completedBookings = bookingsData.filter(b => b.status === 'completed').length;
+        const totalRevenue = bookingsData.filter(b => b.status === 'completed').reduce((sum, b) => sum + Number(b.giaTri), 0);
+        
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="label">👨‍✈️ Tổng tài xế</div><div class="value">${driversData.length}</div></div>
+            <div class="stat-card"><div class="label">✅ Đang hoạt động</div><div class="value">${activeDrivers}</div></div>
+            <div class="stat-card"><div class="label">🔒 Đã khóa</div><div class="value">${blockedDrivers}</div></div>
+            <div class="stat-card"><div class="label">📋 Đơn chờ xác nhận</div><div class="value">${pendingBookings}</div></div>
+            <div class="stat-card"><div class="label">🚀 Đã xác nhận</div><div class="value">${confirmedBookings}</div></div>
+            <div class="stat-card"><div class="label">✅ Hoàn thành</div><div class="value">${completedBookings}</div></div>
+            <div class="stat-card"><div class="label">💰 Doanh thu</div><div class="value">${totalRevenue.toLocaleString('vi-VN')}đ</div></div>
+        `;
+    }
+    
+    // ==================== CHI TIẾT ====================
+    function viewDriverDetail(driverId) {
+        const driver = driversData.find(d => d.id === driverId);
+        if (!driver) return;
+        
+        document.getElementById('detailBody').innerHTML = `
+            <div class="detail-row"><div class="detail-label">ID:</div><div class="detail-value">${driver.id || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Họ tên:</div><div class="detail-value">${driver.name || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">SĐT:</div><div class="detail-value">${driver.phone || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Email:</div><div class="detail-value">${driver.email || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Biển số:</div><div class="detail-value">${driver.plate || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Loại xe:</div><div class="detail-value">${driver.carType || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Trạng thái:</div><div class="detail-value">${driver.status === 'active' ? 'Hoạt động' : 'Bị khóa'}</div></div>
+            <div class="detail-row"><div class="detail-label">Ngày tạo:</div><div class="detail-value">${driver.createdAt || ''}</div></div>
+        `;
+        document.getElementById('detailModal').classList.add('active');
+    }
+    
+    function viewBookingDetail(bookingId) {
+        const booking = bookingsData.find(b => b.id === bookingId);
+        if (!booking) return;
+        
+        const statusMap = { pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
+        
+        document.getElementById('detailBody').innerHTML = `
+            <div class="detail-row"><div class="detail-label">Mã đơn:</div><div class="detail-value">${booking.id || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Họ tên KH:</div><div class="detail-value">${booking.hoTen || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">SĐT KH:</div><div class="detail-value">${booking.sdt || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Email:</div><div class="detail-value">${booking.email || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Điểm đi:</div><div class="detail-value">${booking.diemDi || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Điểm đến:</div><div class="detail-value">${booking.diemDen || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Ngày đi:</div><div class="detail-value">${booking.ngayDi || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Giờ đi:</div><div class="detail-value">${booking.gioDi || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Loại xe:</div><div class="detail-value">${booking.loaiXe || ''}</div></div>
+            <div class="detail-row"><div class="detail-label">Giá:</div><div class="detail-value">${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div></div>
+            <div class="detail-row"><div class="detail-label">Trạng thái:</div><div class="detail-value">${statusMap[booking.status] || booking.status}</div></div>
+            <div class="detail-row"><div class="detail-label">Ngày đặt:</div><div class="detail-value">${booking.timestamp || ''}</div></div>
+            ${booking.driverPhone ? `<div class="detail-row"><div class="detail-label">Tài xế:</div><div class="detail-value">${booking.driverPhone}</div></div>` : ''}
+        `;
+        document.getElementById('detailModal').classList.add('active');
+    }
+    
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('active');
+    }
+    
+    // ==================== TAB SWITCHING ====================
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const tabName = tab.getAttribute('data-tab');
+            document.getElementById('driversTab').style.display = tabName === 'drivers' ? 'block' : 'none';
+            document.getElementById('bookingsTab').style.display = tabName === 'bookings' ? 'block' : 'none';
+        });
+    });
+    
+    // Make functions global for onclick
+    window.adminLogin = adminLogin;
+    window.adminLogout = adminLogout;
+    window.loadAllData = loadAllData;
+    window.updateDriverStatus = updateDriverStatus;
+    window.updateBookingStatus = updateBookingStatus;
+    window.viewDriverDetail = viewDriverDetail;
+    window.viewBookingDetail = viewBookingDetail;
+    window.closeModal = closeModal;
+</script>
+</body>
+</html>
