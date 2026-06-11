@@ -468,6 +468,7 @@
                 div.addEventListener('click', () => {
                     inputElement.value = place;
                     listElement.style.display = 'none';
+                   
                     if (autoTraCuu) traCuuGia();
                 });
                 listElement.appendChild(div);
@@ -489,47 +490,93 @@
     }
     
     // Tra cứu chính (không phân biệt chiều)
-    function traCuuGia() {
-        let di = diemDiInput.value.trim();
-        let den = diemDenInput.value.trim();
-        if (!di || !den) {
-            ketQuaDiv.innerHTML = '<div class="toast-message error">❗ Vui lòng nhập đầy đủ điểm đi và điểm đến</div>';
-            return;
-        }
-        if (di === den) {
-            ketQuaDiv.innerHTML = '<div class="toast-message error">📍 Điểm đi và đến không thể trùng nhau</div>';
-            return;
-        }
-        
-        const tuyen = danhSachTuyen.find(t => 
-            (t.diemDi === di && t.diemDen === den) || 
-            (t.diemDi === den && t.diemDen === di)
+   function normalizePlace(str) {
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+ function traCuuGia() {
+
+    let di = diemDiInput.value.trim();
+    let den = diemDenInput.value.trim();
+
+    if (!di || !den) {
+        ketQuaDiv.innerHTML =
+            '<div class="toast-message error">❗ Vui lòng nhập đầy đủ điểm đi và điểm đến</div>';
+        return;
+    }
+
+    if (normalizePlace(di) === normalizePlace(den)) {
+        ketQuaDiv.innerHTML =
+            '<div class="toast-message error">📍 Điểm đi và điểm đến không thể trùng nhau</div>';
+        return;
+    }
+
+    const diNorm = normalizePlace(di);
+    const denNorm = normalizePlace(den);
+
+    const tuyen = danhSachTuyen.find(t => {
+
+        const tDi = normalizePlace(t.diemDi);
+        const tDen = normalizePlace(t.diemDen);
+
+        return (
+            (tDi === diNorm && tDen === denNorm) ||
+            (tDi === denNorm && tDen === diNorm)
         );
-        
-        if (!tuyen) {
-            ketQuaDiv.innerHTML = `<div class="toast-message error">🚫 Không tìm thấy tuyến: <strong>${di}</strong> → <strong>${den}</strong>. Vui lòng liên hệ CSKH hoặc chọn tuyến khác.</div>`;
-            return;
-        }
-        
-        const formatVND = (num) => num.toLocaleString('vi-VN') + 'đ';
+    });
+
+    if (!tuyen) {
         ketQuaDiv.innerHTML = `
-            <div class="card-result">
-                <div style="display:flex; justify-content:space-between; flex-wrap:wrap;">
-                    <span><strong>🚩 Điểm đi:</strong> ${tuyen.diemDi}</span>
-                    <span><strong>🏁 Điểm đến:</strong> ${tuyen.diemDen}</span>
-                </div>
-                <div style="margin-top: 8px;"><strong>🛣️ Quãng đường:</strong> ${tuyen.km} km</div>
-                <div class="price-row">
-                    <span>🚗 <strong>Tiện chuyến</strong></span>
-                    <span class="price-tc">${formatVND(tuyen.giaTienChuyen)}</span>
-                </div>
-                <div class="price-row">
-                    <span>🚙 <strong>Bao xe (riêng)</strong></span>
-                    <span class="price-bx">${formatVND(tuyen.giaBaoXe)}</span>
-                </div>
+            <div class="toast-message error">
+                🚫 Không tìm thấy tuyến:
+                <strong>${di}</strong> →
+                <strong>${den}</strong>
             </div>
         `;
-        
+        return;
+    }
+
+    const formatVND = (num) =>
+        Number(num).toLocaleString('vi-VN') + 'đ';
+
+    ketQuaDiv.innerHTML = `
+        <div class="card-result">
+
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+                <span><strong>🚩 Điểm đi:</strong> ${di}</span>
+                <span><strong>🏁 Điểm đến:</strong> ${den}</span>
+            </div>
+
+            <div style="margin-top:10px;">
+                <strong>🛣️ Quãng đường:</strong>
+                ${tuyen.km} km
+            </div>
+
+            <div class="price-row">
+                <span>🚗 <strong>Tiện chuyến</strong></span>
+                <span class="price-tc">
+                    ${formatVND(tuyen.giaTienChuyen)}
+                </span>
+            </div>
+
+            <div class="price-row">
+                <span>🚙 <strong>Bao xe</strong></span>
+                <span class="price-bx">
+                    ${formatVND(tuyen.giaBaoXe)}
+                </span>
+            </div>
+
+        </div>
+    `;
+
+    window.lastQueriedRoute = tuyen;
+}
         // Lưu lại thông tin giá cho lúc đặt xe
         window.lastQueriedRoute = tuyen;
     }
@@ -575,11 +622,19 @@
         // Tìm tuyến (có thể dùng lastQueriedRoute hoặc tìm lại)
         let tuyen = window.lastQueriedRoute;
         if (!tuyen || !((tuyen.diemDi === diemDi && tuyen.diemDen === diemDen) || (tuyen.diemDi === diemDen && tuyen.diemDen === diemDi))) {
-            tuyen = danhSachTuyen.find(t => 
-                (t.diemDi === diemDi && t.diemDen === diemDen) ||
-                (t.diemDi === diemDen && t.diemDen === diemDi)
-            );
-        }
+          const diNorm = normalizePlace(diemDi);
+const denNorm = normalizePlace(diemDen);
+
+tuyen = danhSachTuyen.find(t => {
+
+    const tDi = normalizePlace(t.diemDi);
+    const tDen = normalizePlace(t.diemDen);
+
+    return (
+        (tDi === diNorm && tDen === denNorm) ||
+        (tDi === denNorm && tDen === diNorm)
+    );
+});
         
         let loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
         let giaTri = 0;
