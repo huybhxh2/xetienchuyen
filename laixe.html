@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>App tài xế - Quản lý chuyến</title>
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Arial;background:#f3f4f6;padding:15px}
@@ -63,12 +62,13 @@ h2{text-align:center;color:#0d6efd;margin-bottom:20px}
 </div>
 
 <div id="listChuyen"></div>
+<div id="loading" style="text-align:center;padding:20px">⏳ Đang tải...</div>
 
 </div>
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbzkIQhjOZ2Tg7K9Pml9XnsUlMvcIfjCdUAJwN3fRZPqlIya34wHqc3UeXFowJbTgBbqGg/exec";
+const API = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // THAY ID CỦA BẠN
 
 // Kiểm tra đăng nhập
 const user = JSON.parse(localStorage.getItem("driver") || "null");
@@ -102,8 +102,12 @@ function showTab(tab){
 
 async function load(){
     try{
+        document.getElementById("loading").style.display = "block";
+        
         const res = await fetch(API + "?action=getBookings");
         const json = await res.json();
+        
+        document.getElementById("loading").style.display = "none";
         
         if(!json.success){
             document.getElementById("listChuyen").innerHTML = "<div class='card'>❌ Lỗi tải dữ liệu</div>";
@@ -138,10 +142,10 @@ async function load(){
                 <div class="status ${statusClass}">📌 ${x.trangThai}</div>
                 
                 <div class="row">
-                    <a href="tel:${x.sdt}" style="flex:1">
+                    <a href="tel:${x.sdt}" style="flex:1;text-decoration:none">
                         <button class="call">📞 Gọi khách</button>
                     </a>
-                    <a href="https://www.google.com/maps/search/${encodeURIComponent(x.diemDi)}" target="_blank" style="flex:1">
+                    <a href="https://www.google.com/maps/search/${encodeURIComponent(x.diemDi)}" target="_blank" style="flex:1;text-decoration:none">
                         <button class="map">🗺️ Maps</button>
                     </a>
                 </div>`;
@@ -153,8 +157,6 @@ async function load(){
                     html += `<button class="btn btn-warning" onclick="updateStatus('${x.id}','Đang chở')">🚗 BẮT ĐẦU CHỞ</button>`;
                 } else if(x.trangThai === "Đang chở"){
                     html += `<button class="btn btn-success" onclick="updateStatus('${x.id}','Hoàn thành')">✅ HOÀN THÀNH</button>`;
-                } else if(x.trangThai === "Chờ xác nhận" && !x.sdtTaiXe){
-                    html += `<button class="btn" onclick="nhanChuyen('${x.id}')">✅ NHẬN CHUYẾN</button>`;
                 }
             }
             
@@ -164,6 +166,7 @@ async function load(){
         document.getElementById("listChuyen").innerHTML = html || `<div class="card">📭 Không có chuyến nào</div>`;
         
     } catch(err){
+        document.getElementById("loading").style.display = "none";
         document.getElementById("listChuyen").innerHTML = "<div class='card'>❌ Lỗi: " + err.message + "</div>";
     }
 }
@@ -234,9 +237,10 @@ async function updateStatus(id, status){
     }
 }
 
-// Tự động refresh mỗi 10 giây
+// Tải dữ liệu lần đầu
 load();
-setInterval(load, 10000);
+// Tự động refresh mỗi 15 giây
+setInterval(load, 15000);
 
 </script>
 
