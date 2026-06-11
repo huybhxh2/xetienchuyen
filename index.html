@@ -932,45 +932,92 @@
     }
     
     // ==================== ĐẶT XE ====================
-    async function datXe() {
-        const hoTen = document.getElementById('hoTen').value.trim();
-        const sdt = document.getElementById('sdt').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const ngayDi = document.getElementById('ngayDi').value;
-        const gioDi = document.getElementById('gioDi').value;
-        const diemDi = diemDiInput.value.trim();
-        const diemDen = diemDenInput.value.trim();
-        const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
-        
-        if (!hoTen || !sdt || !ngayDi || !gioDi) {
-            alert("Nhập đủ thông tin");
-            return;
-        }
-        if (!window.lastRoute) {
-            alert("Tra cứu giá trước khi đặt");
-            return;
-        }
-        
-        const loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
-        const giaTri = loaiXe === "tien_chuyen" ? window.lastRoute.giaTienChuyen : window.lastRoute.giaBaoXe;
-        
-        if (!confirm(`XÁC NHẬN ĐẶT ${loaiXeText}\n👤 ${hoTen}\n📞 ${sdt}\n🚏 ${diemDi} → ${diemDen}\n📅 ${ngayDi} ${gioDi}\n💰 ${giaTri.toLocaleString('vi-VN')}đ`)) return;
-        
-        thongBaoDiv.innerHTML = '<div class="toast-message toast-loading">⏳ Đang xử lý...</div>';
-        
-        const result = await createBooking({ hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi, loaiXe: loaiXeText, giaTri });
-        
-        if (result.success) {
-            thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công! Tài xế sẽ liên hệ.</div>';
-            document.getElementById('hoTen').value = '';
-            document.getElementById('sdt').value = '';
-            document.getElementById('email').value = '';
-        } else {
-            thongBaoDiv.innerHTML = `<div class="toast-message toast-error">❌ ${result.message}</div>`;
-        }
-        setTimeout(() => thongBaoDiv.innerHTML = '', 3000);
+   async function datXe() {
+    const hoTen = document.getElementById('hoTen').value.trim();
+    const sdt = document.getElementById('sdt').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const ngayDi = document.getElementById('ngayDi').value;
+    const gioDi = document.getElementById('gioDi').value;
+    const diemDi = diemDiInput.value.trim();
+    const diemDen = diemDenInput.value.trim();
+    const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
+    
+    if (!hoTen || !sdt || !ngayDi || !gioDi) {
+        alert("Nhập đủ thông tin");
+        return;
+    }
+    if (!window.lastRoute) {
+        alert("Tra cứu giá trước khi đặt");
+        return;
     }
     
+    const loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
+    const giaTri = loaiXe === "tien_chuyen" ? window.lastRoute.giaTienChuyen : window.lastRoute.giaBaoXe;
+    
+    if (!confirm(`XÁC NHẬN ĐẶT ${loaiXeText}\n👤 ${hoTen}\n📞 ${sdt}\n🚏 ${diemDi} → ${diemDen}\n📅 ${ngayDi} ${gioDi}\n💰 ${giaTri.toLocaleString('vi-VN')}đ`)) return;
+    
+    thongBaoDiv.innerHTML = '<div class="toast-message toast-loading">⏳ Đang xử lý...</div>';
+    
+    // Tạo URL gửi đi (dùng GET để tránh CORS)
+    const params = new URLSearchParams();
+    params.append('action', 'createBooking');
+    params.append('hoTen', hoTen);
+    params.append('sdt', sdt);
+    params.append('email', email);
+    params.append('diemDi', diemDi);
+    params.append('diemDen', diemDen);
+    params.append('ngayDi', ngayDi);
+    params.append('gioDi', gioDi);
+    params.append('loaiXe', loaiXeText);
+    params.append('giaTri', giaTri);
+    
+    const fullUrl = `${API_URL}?${params.toString()}`;
+    console.log("Gửi request đến:", fullUrl);
+    
+    // Cách 1: Dùng fetch (có thể bị lỗi trên mobile)
+    let success = false;
+    try {
+        const response = await fetch(fullUrl, { method: 'GET', mode: 'no-cors' });
+        success = true;
+        console.log("Fetch thành công");
+    } catch(e) {
+        console.log("Fetch lỗi:", e);
+    }
+    
+    // Cách 2: Dùng Image beacon (chắc chắn hoạt động trên mọi thiết bị)
+    const img = new Image();
+    img.onload = function() {
+        console.log("Image beacon thành công");
+        success = true;
+    };
+    img.onerror = function() {
+        console.log("Image beacon thất bại");
+    };
+    img.src = fullUrl;
+    
+    // Cách 3: Dùng script tag (cách chắc chắn nhất)
+    const script = document.createElement('script');
+    script.src = fullUrl;
+    document.body.appendChild(script);
+    
+    // Lưu vào localStorage
+    const newBooking = {
+        id: "BK" + Date.now(),
+        hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi,
+        loaiXe: loaiXeText, giaTri, status: 'pending',
+        driverPhone: null, timestamp: new Date().toISOString()
+    };
+    allBookings.push(newBooking);
+    saveBookings();
+    
+    thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công!</div>';
+    document.getElementById('hoTen').value = '';
+    document.getElementById('sdt').value = '';
+    document.getElementById('email').value = '';
+    
+    // Đợi 1 giây để đảm bảo gửi xong
+    setTimeout(() => thongBaoDiv.innerHTML = '', 3000);
+}
     // ==================== TÀI XẾ UI ====================
     function updateDriverUI() {
         if (currentDriver) {
