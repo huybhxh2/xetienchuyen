@@ -932,7 +932,8 @@
     }
     
     // ==================== ĐẶT XE ====================
-   async function datXe() {
+  // ==================== ĐẶT XE (BẢN CHUẨN CHO ĐIỆN THOẠI) ====================
+async function datXe() {
     const hoTen = document.getElementById('hoTen').value.trim();
     const sdt = document.getElementById('sdt').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -958,7 +959,7 @@
     
     thongBaoDiv.innerHTML = '<div class="toast-message toast-loading">⏳ Đang xử lý...</div>';
     
-    // Tạo URL gửi đi (dùng GET để tránh CORS)
+    // Tạo URL gửi đi
     const params = new URLSearchParams();
     params.append('action', 'createBooking');
     params.append('hoTen', hoTen);
@@ -974,31 +975,17 @@
     const fullUrl = `${API_URL}?${params.toString()}`;
     console.log("Gửi request đến:", fullUrl);
     
-    // Cách 1: Dùng fetch (có thể bị lỗi trên mobile)
-    let success = false;
+    // Dùng fetch với mode 'no-cors'
     try {
-        const response = await fetch(fullUrl, { method: 'GET', mode: 'no-cors' });
-        success = true;
-        console.log("Fetch thành công");
+        await fetch(fullUrl, { method: 'GET', mode: 'no-cors' });
+        console.log("Fetch đã gửi");
     } catch(e) {
         console.log("Fetch lỗi:", e);
     }
     
-    // Cách 2: Dùng Image beacon (chắc chắn hoạt động trên mọi thiết bị)
+    // Dùng Image beacon (chắc chắn hoạt động)
     const img = new Image();
-    img.onload = function() {
-        console.log("Image beacon thành công");
-        success = true;
-    };
-    img.onerror = function() {
-        console.log("Image beacon thất bại");
-    };
     img.src = fullUrl;
-    
-    // Cách 3: Dùng script tag (cách chắc chắn nhất)
-    const script = document.createElement('script');
-    script.src = fullUrl;
-    document.body.appendChild(script);
     
     // Lưu vào localStorage
     const newBooking = {
@@ -1015,7 +1002,6 @@
     document.getElementById('sdt').value = '';
     document.getElementById('email').value = '';
     
-    // Đợi 1 giây để đảm bảo gửi xong
     setTimeout(() => thongBaoDiv.innerHTML = '', 3000);
 }
     // ==================== TÀI XẾ UI ====================
