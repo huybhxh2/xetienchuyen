@@ -933,7 +933,8 @@
     
     // ==================== ĐẶT XE ====================
   // ==================== ĐẶT XE (BẢN CHUẨN CHO ĐIỆN THOẠI) ====================
-async function datXe() {
+// ==================== ĐẶT XE (CÁCH CHẮC CHẮN NHẤT CHO ĐIỆN THOẠI) ====================
+function datXe() {
     const hoTen = document.getElementById('hoTen').value.trim();
     const sdt = document.getElementById('sdt').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -959,33 +960,19 @@ async function datXe() {
     
     thongBaoDiv.innerHTML = '<div class="toast-message toast-loading">⏳ Đang xử lý...</div>';
     
-    // Tạo URL gửi đi
-    const params = new URLSearchParams();
-    params.append('action', 'createBooking');
-    params.append('hoTen', hoTen);
-    params.append('sdt', sdt);
-    params.append('email', email);
-    params.append('diemDi', diemDi);
-    params.append('diemDen', diemDen);
-    params.append('ngayDi', ngayDi);
-    params.append('gioDi', gioDi);
-    params.append('loaiXe', loaiXeText);
-    params.append('giaTri', giaTri);
+    // Tạo URL
+    const url = `${API_URL}?action=createBooking&hoTen=${encodeURIComponent(hoTen)}&sdt=${encodeURIComponent(sdt)}&email=${encodeURIComponent(email)}&diemDi=${encodeURIComponent(diemDi)}&diemDen=${encodeURIComponent(diemDen)}&ngayDi=${encodeURIComponent(ngayDi)}&gioDi=${encodeURIComponent(gioDi)}&loaiXe=${encodeURIComponent(loaiXeText)}&giaTri=${giaTri}`;
     
-    const fullUrl = `${API_URL}?${params.toString()}`;
-    console.log("Gửi request đến:", fullUrl);
+    console.log("URL gửi đi:", url);
     
-    // Dùng fetch với mode 'no-cors'
-    try {
-        await fetch(fullUrl, { method: 'GET', mode: 'no-cors' });
-        console.log("Fetch đã gửi");
-    } catch(e) {
-        console.log("Fetch lỗi:", e);
-    }
+    // Cách 1: Mở tab mới (chắc chắn hoạt động trên mọi trình duyệt)
+    window.open(url, '_blank');
     
-    // Dùng Image beacon (chắc chắn hoạt động)
-    const img = new Image();
-    img.src = fullUrl;
+    // Cách 2: Gửi bằng fetch (có thể bị chặn nhưng vẫn thử)
+    fetch(url, { method: 'GET', mode: 'no-cors' }).catch(e => console.log(e));
+    
+    // Cách 3: Dùng Image
+    new Image().src = url;
     
     // Lưu vào localStorage
     const newBooking = {
@@ -997,12 +984,12 @@ async function datXe() {
     allBookings.push(newBooking);
     saveBookings();
     
-    thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công!</div>';
+    thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công! Đã mở tab xác nhận.</div>';
     document.getElementById('hoTen').value = '';
     document.getElementById('sdt').value = '';
     document.getElementById('email').value = '';
     
-    setTimeout(() => thongBaoDiv.innerHTML = '', 3000);
+    setTimeout(() => thongBaoDiv.innerHTML = '', 4000);
 }
     // ==================== TÀI XẾ UI ====================
     function updateDriverUI() {
