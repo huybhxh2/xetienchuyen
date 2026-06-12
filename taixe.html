@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <title>Tài xế - Vận tải kết nối</title>
 <style>
-    /* ... giữ nguyên CSS ... */
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { background: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
     .app-container { max-width: 500px; margin: 0 auto; background: #ffffff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
@@ -24,7 +23,6 @@
     .btn-primary { background: #0066cc; color: white; }
     .btn-secondary { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
     .btn-danger { background: #ef4444; color: white; }
-    .btn-success { background: #10b981; color: white; }
     .driver-info { background: #f0f7ff; border-radius: 16px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .driver-avatar { width: 50px; height: 50px; background: #0066cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
     .driver-details { flex: 1; }
@@ -35,7 +33,7 @@
     .status-pending { background: #fef3c7; color: #92400e; }
     .status-confirmed { background: #d1fae5; color: #065f46; }
     .status-completed { background: #e0e7ff; color: #3730a3; }
-    .booking-route { font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+    .booking-route { font-weight: 600; margin-bottom: 8px; }
     .booking-info { font-size: 0.75rem; color: #6b7a8a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .booking-actions { display: flex; gap: 8px; margin-top: 12px; }
     .booking-actions button { flex: 1; padding: 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: none; cursor: pointer; }
@@ -160,14 +158,14 @@
     </div>
 </div>
 
-<!-- Modal Đăng ký -->
+<!-- Modal Đăng ký (ĐÃ BỎ EMAIL) -->
 <div id="registerModal" class="modal">
     <div class="modal-content">
         <div class="modal-header"><h3>📝 Đăng ký tài xế</h3></div>
         <div class="modal-body">
             <div class="form-group"><label class="form-label">HỌ VÀ TÊN</label><input type="text" id="regName" placeholder="Nguyễn Văn A"></div>
             <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="regPhone" placeholder="0912 345 678"></div>
-            <div class="form-group"><label class="form-label">EMAIL</label><input type="email" id="regEmail" placeholder="example@gmail.com"></div>
+            <!-- ĐÃ XÓA Ô EMAIL -->
             <div class="form-group"><label class="form-label">BIỂN SỐ XE</label><input type="text" id="regPlate" placeholder="29A-123.45"></div>
             <div class="form-group"><label class="form-label">LOẠI XE</label><select id="regCarType"><option>4 chỗ</option><option>7 chỗ</option><option>16 chỗ</option></select></div>
             <div class="form-group"><label class="form-label">MẬT KHẨU</label><input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự"></div>
@@ -199,7 +197,6 @@
     // ==================== CẤU HÌNH ====================
     const API_URL = "https://script.google.com/macros/s/AKfycbw186RsTclzHo9bjwLkBmvZz6p2YoQXBfX6GX8hZXXhq6cJ3KCcy-4wqzC62U11M1-x/exec";
     
-    // State
     let currentDriver = null;
     let allBookings = [];
     let currentFilter = 'month';
@@ -233,12 +230,12 @@
     }
     
     // ==================== ĐĂNG KÝ ====================
-    async function registerDriver(name, phone, email, plate, carType, password) {
+    async function registerDriver(name, phone, plate, carType, password) {
         if (password.length < 6) {
             return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
         }
         
-        const result = await callAPI("register", { name, phone, email, plate, carType, password });
+        const result = await callAPI("register", { name, phone, email: "", plate, carType, password });
         if (result.status === "success") {
             return { success: true, message: result.message };
         }
@@ -260,7 +257,6 @@
     async function loadBookings() {
         if (!currentDriver) return;
         
-        // Lấy tất cả đơn hàng
         const result = await callAPI("getBookings", {});
         if (result.status === "success" && result.data) {
             allBookings = result.data;
@@ -384,7 +380,6 @@
         totalTripsSpan.innerText = totalTrips;
         totalRevenueSpan.innerText = totalRevenue.toLocaleString('vi-VN') + 'đ';
         
-        // Lịch sử theo ngày
         const groupedByDate = {};
         filtered.forEach(b => {
             const date = new Date(b.timestamp).toLocaleDateString('vi-VN');
@@ -467,7 +462,6 @@
     function showModal(modal) { if(modal) modal.classList.add('active'); }
     function hideModal(modal) { if(modal) modal.classList.remove('active'); }
     
-    // Đăng nhập
     document.getElementById('openLoginBtn').onclick = () => showModal(modals.login);
     document.getElementById('closeLoginModal').onclick = () => hideModal(modals.login);
     document.getElementById('confirmLoginBtn').onclick = async () => {
@@ -483,13 +477,11 @@
         }
     };
     
-    // Đăng ký
     document.getElementById('openRegisterBtn').onclick = () => showModal(modals.register);
     document.getElementById('closeRegisterModal').onclick = () => hideModal(modals.register);
     document.getElementById('confirmRegisterBtn').onclick = async () => {
         const name = document.getElementById('regName').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
-        const email = document.getElementById('regEmail').value.trim();
         const plate = document.getElementById('regPlate').value.trim();
         const carType = document.getElementById('regCarType').value;
         const password = document.getElementById('regPassword').value;
@@ -498,20 +490,18 @@
         if (!name || !phone || !password) { alert("Vui lòng nhập đầy đủ thông tin"); return; }
         if (password !== confirm) { alert("Mật khẩu xác nhận không khớp"); return; }
         
-        const result = await registerDriver(name, phone, email, plate, carType, password);
+        const result = await registerDriver(name, phone, plate, carType, password);
         alert(result.message);
         if (result.success) {
             hideModal(modals.register);
             document.getElementById('regName').value = '';
             document.getElementById('regPhone').value = '';
-            document.getElementById('regEmail').value = '';
             document.getElementById('regPlate').value = '';
             document.getElementById('regPassword').value = '';
             document.getElementById('regConfirmPassword').value = '';
         }
     };
     
-    // Quên mật khẩu
     document.getElementById('forgotLink').onclick = () => {
         hideModal(modals.login);
         showModal(modals.forgot);
@@ -525,18 +515,15 @@
         if (result.success) hideModal(modals.forgot);
     };
     
-    // Đăng xuất
     document.getElementById('logoutBtn').onclick = () => {
         logoutDriver();
         updateDriverUI();
     };
     
-    // Tab
     document.getElementById('tabPending').onclick = () => switchTab('pending');
     document.getElementById('tabMyBookings').onclick = () => switchTab('my');
     document.getElementById('tabHistory').onclick = () => switchTab('history');
     
-    // Filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -546,11 +533,9 @@
         });
     });
     
-    // Global functions
     window.receiveBooking = receiveBooking;
     window.completeBooking = completeBooking;
     
-    // Khởi tạo
     const savedDriver = localStorage.getItem('currentDriver');
     if (savedDriver) {
         currentDriver = JSON.parse(savedDriver);
