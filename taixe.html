@@ -6,11 +6,11 @@
 <title>Tài xế - Vận tải kết nối</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
-    .app-container { max-width: 500px; margin: 0 auto; background: #ffffff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    body { background: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .app-container { max-width: 500px; margin: 0 auto; background: #ffffff; min-height: 100vh; }
     .app-header { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); padding: 20px; color: white; border-radius: 0 0 24px 24px; }
-    .app-header h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-    .back-link { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; font-weight: 600; color: white; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .app-header h1 { font-size: 1.6rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .back-link { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; color: white; text-decoration: none; }
     .content { padding: 20px; }
     .form-group { margin-bottom: 18px; position: relative; }
     .form-label { font-size: 0.75rem; font-weight: 600; color: #5a6874; margin-bottom: 6px; display: block; }
@@ -44,7 +44,6 @@
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     .toast-success { background: #d1fae5; color: #065f46; }
     .toast-error { background: #fee2e2; color: #991b1b; }
-    .toast-loading { background: #fef3c7; color: #92400e; }
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex; }
     .modal-content { background: white; border-radius: 28px; max-width: 400px; width: 100%; overflow: hidden; max-height: 90vh; overflow-y: auto; }
@@ -71,127 +70,30 @@
 <body>
 <div class="app-container">
     <div class="app-header">
-        <h1>
-            🚖 Vận tải kết nối
-            <a href="index.html" class="back-link">📱 Đặt xe</a>
-        </h1>
+        <h1>🚖 Vận tải kết nối <a href="index.html" class="back-link">📱 Đặt xe</a></h1>
         <p>👨‍✈️ Khu vực dành cho Tài xế</p>
     </div>
-
     <div class="content">
         <div id="driverNotLogged" style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 3rem; margin-bottom: 16px;">👨‍✈️</div>
-            <h3 style="margin-bottom: 8px;">Đăng nhập tài xế</h3>
-            <p style="color: #6b7a8a; margin-bottom: 24px;">Nhập thông tin để quản lý đơn hàng</p>
-            <button class="btn btn-primary" id="openLoginBtn" style="width:100%">Đăng nhập</button>
+            <div style="font-size: 3rem;">👨‍✈️</div>
+            <h3>Đăng nhập tài xế</h3>
+            <p style="margin-bottom: 24px;">Nhập thông tin để quản lý đơn hàng</p>
+            <button class="btn btn-primary" id="openLoginBtn">Đăng nhập</button>
             <p class="link-text" id="openRegisterBtn">Chưa có tài khoản? Đăng ký ngay</p>
         </div>
-        
         <div id="driverLogged" style="display: none;">
-            <div class="driver-info">
-                <div class="driver-avatar">👨‍✈️</div>
-                <div class="driver-details">
-                    <div class="driver-name" id="driverName"></div>
-                    <div class="driver-phone" id="driverPhone"></div>
-                </div>
-                <button class="btn btn-danger" id="logoutBtn" style="width: auto; padding: 8px 16px;">Đăng xuất</button>
-            </div>
-            
-            <div class="driver-subtabs">
-                <button id="tabPending" class="driver-subtab active">📋 Đơn chờ nhận</button>
-                <button id="tabMyBookings" class="driver-subtab inactive">✅ Đơn của tôi</button>
-                <button id="tabHistory" class="driver-subtab inactive">📜 Lịch sử & Thu nhập</button>
-            </div>
-            
-            <div id="pendingPanel">
-                <div class="flex-between" style="margin-bottom: 16px;">
-                    <h4>📋 Danh sách đơn chờ nhận</h4>
-                    <span id="bookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px; font-size:0.7rem;">0 đơn</span>
-                </div>
-                <div id="bookingList"><div style="text-align:center; padding:20px;">⏳ Đang tải...</div></div>
-            </div>
-            
-            <div id="myBookingsPanel" style="display: none;">
-                <div class="flex-between" style="margin-bottom: 16px;">
-                    <h4>✅ Đơn đã nhận</h4>
-                    <span id="myBookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px; font-size:0.7rem;">0 đơn</span>
-                </div>
-                <div id="myBookingList"><div style="text-align:center; padding:20px;">⏳ Đang tải...</div></div>
-            </div>
-            
-            <div id="historyPanel" style="display: none;">
-                <div class="stats-card">
-                    <h4 style="margin-bottom: 12px;">💰 Tổng thu nhập</h4>
-                    <div class="filter-buttons">
-                        <button class="filter-btn" data-filter="day">Hôm nay</button>
-                        <button class="filter-btn" data-filter="week">Tuần này</button>
-                        <button class="filter-btn active" data-filter="month">Tháng này</button>
-                    </div>
-                    <div class="stats-row">
-                        <span class="stats-label">Số chuyến:</span>
-                        <span class="stats-value" id="totalTrips">0</span>
-                    </div>
-                    <div class="stats-row">
-                        <span class="stats-label">Tổng thu:</span>
-                        <span class="stats-value" id="totalRevenue">0đ</span>
-                    </div>
-                </div>
-                <h4 style="margin: 16px 0 12px;">📜 Lịch sử các chuyến đã chạy</h4>
-                <div id="historyList"><div style="text-align:center; padding:20px;">⏳ Đang tải...</div></div>
-            </div>
+            <div class="driver-info"><div class="driver-avatar">👨‍✈️</div><div class="driver-details"><div class="driver-name" id="driverName"></div><div class="driver-phone" id="driverPhone"></div></div><button class="btn btn-danger" id="logoutBtn">Đăng xuất</button></div>
+            <div class="driver-subtabs"><button id="tabPending" class="driver-subtab active">📋 Đơn chờ nhận</button><button id="tabMyBookings" class="driver-subtab inactive">✅ Đơn của tôi</button><button id="tabHistory" class="driver-subtab inactive">📜 Lịch sử & Thu nhập</button></div>
+            <div id="pendingPanel"><div class="flex-between" style="margin-bottom:16px;"><h4>📋 Danh sách đơn chờ nhận</h4><span id="bookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px;">0 đơn</span></div><div id="bookingList"><div style="text-align:center; padding:20px;">⏳ Đang tải...</div></div></div>
+            <div id="myBookingsPanel" style="display:none;"><div class="flex-between" style="margin-bottom:16px;"><h4>✅ Đơn đã nhận</h4><span id="myBookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px;">0 đơn</span></div><div id="myBookingList"><div style="text-align:center; padding:20px;">⏳ Đang tải...</div></div></div>
+            <div id="historyPanel" style="display:none;"><div class="stats-card"><h4>💰 Tổng thu nhập</h4><div class="filter-buttons"><button class="filter-btn" data-filter="day">Hôm nay</button><button class="filter-btn" data-filter="week">Tuần này</button><button class="filter-btn active" data-filter="month">Tháng này</button></div><div class="stats-row"><span class="stats-label">Số chuyến:</span><span class="stats-value" id="totalTrips">0</span></div><div class="stats-row"><span class="stats-label">Tổng thu:</span><span class="stats-value" id="totalRevenue">0đ</span></div></div><h4>📜 Lịch sử các chuyến đã chạy</h4><div id="historyList"><div style="text-align:center; padding:20px;">⏳ Đang tải...</div></div></div>
         </div>
     </div>
 </div>
 
-<!-- Modal Đăng nhập -->
-<div id="loginModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>👨‍✈️ Đăng nhập</h3></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><div class="input-wrapper"><span class="input-icon">📞</span><input type="tel" id="loginPhone" placeholder="0912 345 678"></div></div>
-            <div class="form-group"><label class="form-label">MẬT KHẨU</label><div class="input-wrapper"><span class="input-icon">🔒</span><input type="password" id="loginPassword" placeholder="Nhập mật khẩu"></div></div>
-            <p class="link-text" id="forgotLink">Quên mật khẩu?</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="closeLoginModal">Hủy</button>
-            <button class="btn btn-primary" id="confirmLoginBtn">Đăng nhập</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Đăng ký -->
-<div id="registerModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>📝 Đăng ký tài xế</h3></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">HỌ VÀ TÊN</label><input type="text" id="regName" placeholder="Nguyễn Văn A"></div>
-            <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="regPhone" placeholder="0912 345 678"></div>
-            <div class="form-group"><label class="form-label">BIỂN SỐ XE</label><input type="text" id="regPlate" placeholder="29A-123.45"></div>
-            <div class="form-group"><label class="form-label">LOẠI XE</label><select id="regCarType"><option>4 chỗ</option><option>7 chỗ</option><option>16 chỗ</option></select></div>
-            <div class="form-group"><label class="form-label">MẬT KHẨU</label><input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự"></div>
-            <div class="form-group"><label class="form-label">XÁC NHẬN</label><input type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="closeRegisterModal">Hủy</button>
-            <button class="btn btn-primary" id="confirmRegisterBtn">Đăng ký</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Quên mật khẩu -->
-<div id="forgotModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>🔑 Khôi phục mật khẩu</h3></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="forgotPhone" placeholder="0912 345 678"></div>
-            <div class="form-group"><label class="form-label">EMAIL</label><input type="email" id="forgotEmail" placeholder="example@gmail.com"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="closeForgotModal">Hủy</button>
-            <button class="btn btn-primary" id="confirmForgotBtn">Gửi yêu cầu</button>
-        </div>
-    </div>
-</div>
+<div id="loginModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>👨‍✈️ Đăng nhập</h3></div><div class="modal-body"><div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><div class="input-wrapper"><span class="input-icon">📞</span><input type="tel" id="loginPhone" placeholder="0912 345 678"></div></div><div class="form-group"><label class="form-label">MẬT KHẨU</label><div class="input-wrapper"><span class="input-icon">🔒</span><input type="password" id="loginPassword" placeholder="Nhập mật khẩu"></div></div><p class="link-text" id="forgotLink">Quên mật khẩu?</p></div><div class="modal-footer"><button class="btn btn-secondary" id="closeLoginModal">Hủy</button><button class="btn btn-primary" id="confirmLoginBtn">Đăng nhập</button></div></div></div>
+<div id="registerModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>📝 Đăng ký tài xế</h3></div><div class="modal-body"><div class="form-group"><label class="form-label">HỌ VÀ TÊN</label><input type="text" id="regName" placeholder="Nguyễn Văn A"></div><div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="regPhone" placeholder="0912 345 678"></div><div class="form-group"><label class="form-label">BIỂN SỐ XE</label><input type="text" id="regPlate" placeholder="29A-123.45"></div><div class="form-group"><label class="form-label">LOẠI XE</label><select id="regCarType"><option>4 chỗ</option><option>7 chỗ</option><option>16 chỗ</option></select></div><div class="form-group"><label class="form-label">MẬT KHẨU</label><input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự"></div><div class="form-group"><label class="form-label">XÁC NHẬN</label><input type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu"></div></div><div class="modal-footer"><button class="btn btn-secondary" id="closeRegisterModal">Hủy</button><button class="btn btn-primary" id="confirmRegisterBtn">Đăng ký</button></div></div></div>
+<div id="forgotModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>🔑 Khôi phục mật khẩu</h3></div><div class="modal-body"><div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="forgotPhone" placeholder="0912 345 678"></div><div class="form-group"><label class="form-label">EMAIL</label><input type="email" id="forgotEmail" placeholder="example@gmail.com"></div></div><div class="modal-footer"><button class="btn btn-secondary" id="closeForgotModal">Hủy</button><button class="btn btn-primary" id="confirmForgotBtn">Gửi yêu cầu</button></div></div></div>
 
 <script>
     // ==================== CẤU HÌNH ====================
@@ -201,225 +103,160 @@
     let allBookings = [];
     let currentTab = 'pending';
     let currentFilter = 'month';
+    let drivers = JSON.parse(localStorage.getItem('drivers') || '[]');
     
-    // DOM elements
-    const driverNameSpan = document.getElementById('driverName');
-    const driverPhoneSpan = document.getElementById('driverPhone');
-    const bookingListDiv = document.getElementById('bookingList');
-    const myBookingListDiv = document.getElementById('myBookingList');
-    const bookingCountSpan = document.getElementById('bookingCount');
-    const myBookingCountSpan = document.getElementById('myBookingCount');
-    const historyListDiv = document.getElementById('historyList');
-    const totalTripsSpan = document.getElementById('totalTrips');
-    const totalRevenueSpan = document.getElementById('totalRevenue');
+    function saveDrivers() { localStorage.setItem('drivers', JSON.stringify(drivers)); }
     
-    // ==================== GỌI API DÙNG JSONP (KHÔNG CORS) ====================
-    function callAPI(action, data, callback) {
-        const callbackName = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const params = new URLSearchParams();
-        params.append('action', action);
-        params.append('callback', callbackName);
-        
-        // Thêm từng tham số data vào URL
-        for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-                params.append(key, JSON.stringify(data[key]));
-            }
+    // ==================== GỌI API ====================
+    async function callAPI(action, data = {}) {
+        try {
+            const params = new URLSearchParams();
+            params.append('action', action);
+            for(let key in data) params.append(key, JSON.stringify(data[key]));
+            const url = `${API_URL}?${params.toString()}`;
+            const response = await fetch(url, { method: 'GET' });
+            const result = await response.json();
+            return result;
+        } catch(e) {
+            console.error(e);
+            return { status: "error", message: e.message };
         }
-        
-        window[callbackName] = function(response) {
-            delete window[callbackName];
-            if (script.parentNode) script.parentNode.removeChild(script);
-            if (callback) callback(response);
-        };
-        
-        const url = `${API_URL}?${params.toString()}`;
-        const script = document.createElement('script');
-        script.src = url;
-        document.body.appendChild(script);
-        
-        // Timeout sau 10 giây
-        setTimeout(() => {
-            if (window[callbackName]) {
-                delete window[callbackName];
-                if (script.parentNode) script.parentNode.removeChild(script);
-                if (callback) callback({ status: "error", message: "Timeout" });
-            }
-        }, 10000);
     }
     
     // ==================== ĐĂNG KÝ ====================
-    function registerDriver(name, phone, plate, carType, password, callback) {
-        if (password.length < 6) {
-            callback({ success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" });
-            return;
+    async function registerDriver(name, phone, plate, carType, password) {
+        if(password.length < 6) return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
+        if(drivers.find(d => d.phone === phone)) return { success: false, message: "Số điện thoại đã đăng ký!" };
+        
+        const result = await callAPI("register", { name, phone, email: "", plate, carType, password });
+        if(result.status === "success") {
+            const newDriver = { id: "DR"+Date.now(), name, phone, plate, carType, password: btoa(password), status: 'active' };
+            drivers.push(newDriver);
+            saveDrivers();
+            return { success: true, message: result.message };
         }
-        callAPI("register", { name, phone, email: "", plate, carType, password }, (result) => {
-            if (result && result.status === "success") {
-                callback({ success: true, message: result.message });
-            } else {
-                callback({ success: false, message: result?.message || "Lỗi kết nối!" });
-            }
-        });
+        return { success: false, message: result.message };
     }
     
     // ==================== ĐĂNG NHẬP ====================
-    function loginDriver(phone, password, callback) {
-        callAPI("login", { phone, password }, (result) => {
-            if (result && result.status === "success" && result.data) {
-                currentDriver = result.data;
-                sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
-                callback({ success: true, message: result.message, driver: result.data });
-            } else {
-                callback({ success: false, message: result?.message || "Sai thông tin đăng nhập!" });
-            }
-        });
+    async function loginDriver(phone, password) {
+        const hashed = btoa(password);
+        const driver = drivers.find(d => d.phone === phone && d.password === hashed);
+        if(!driver) return { success: false, message: "Sai số điện thoại hoặc mật khẩu!" };
+        if(driver.status !== 'active') return { success: false, message: "Tài khoản đã bị khóa!" };
+        
+        currentDriver = driver;
+        sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
+        return { success: true, message: "Đăng nhập thành công!", driver };
     }
     
     // ==================== QUÊN MẬT KHẨU ====================
-    function resetPassword(phone, email, callback) {
-        callAPI("resetPassword", { phone, email }, (result) => {
-            if (result && result.status === "success") {
-                callback({ success: true, message: result.message });
-            } else {
-                callback({ success: false, message: result?.message || "Không tìm thấy tài khoản!" });
-            }
-        });
+    async function resetPassword(phone, email) {
+        const driver = drivers.find(d => d.phone === phone);
+        if(!driver) return { success: false, message: "Không tìm thấy tài khoản!" };
+        const newPass = Math.random().toString(36).substring(2,8);
+        driver.password = btoa(newPass);
+        saveDrivers();
+        await callAPI("resetPassword", { phone, email, newPassword: newPass });
+        return { success: true, message: `Mật khẩu mới của bạn: ${newPass}` };
     }
     
-    // ==================== LẤY ĐƠN HÀNG ====================
-    function loadBookings() {
-        if (!currentDriver) return;
+    // ==================== LẤY ĐƠN HÀNG TỪ SHEET ====================
+    async function loadBookings() {
+        if(!currentDriver) return;
         
-        callAPI("getBookings", {}, (result) => {
-            if (result && result.status === "success" && result.data) {
-                allBookings = result.data;
-            } else {
-                allBookings = [];
-            }
-            
-            // Đơn chờ nhận
-            const pendingBookings = allBookings.filter(b => b.status === 'pending' && (!b.driverPhone || b.driverPhone === ''));
-            bookingCountSpan.innerText = pendingBookings.length + ' đơn';
-            
-            if (pendingBookings.length === 0) {
-                bookingListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Không có đơn hàng nào</div>';
-            } else {
-                bookingListDiv.innerHTML = pendingBookings.map(booking => `
-                    <div class="booking-item">
-                        <span class="booking-status status-pending">Chờ nhận</span>
-                        <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
-                        <div class="booking-info">
-                            <span>👤 ${booking.hoTen}</span>
-                            <a href="tel:${booking.sdt}" class="call-link">📞 ${booking.sdt}</a>
-                        </div>
-                        <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
-                        <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
-                        <div class="booking-actions">
-                            <button class="btn-confirm" onclick="receiveBooking('${booking.id}')">✅ Nhận đơn</button>
-                        </div>
+        const result = await callAPI("getBookings", {});
+        if(result.status === "success" && result.data) {
+            allBookings = result.data;
+        }
+        
+        // Đơn chờ nhận (pending và chưa có tài xế)
+        const pending = allBookings.filter(b => b.status === 'pending' && (!b.driverPhone || b.driverPhone === ''));
+        document.getElementById('bookingCount').innerText = pending.length + ' đơn';
+        
+        if(pending.length === 0) {
+            document.getElementById('bookingList').innerHTML = '<div style="text-align:center; padding:20px;">📭 Không có đơn hàng nào</div>';
+        } else {
+            document.getElementById('bookingList').innerHTML = pending.map(b => `
+                <div class="booking-item">
+                    <span class="booking-status status-pending">Chờ nhận</span>
+                    <div class="booking-route">${b.diemDi} → ${b.diemDen}</div>
+                    <div class="booking-info"><span>👤 ${b.hoTen}</span><a href="tel:${b.sdt}" class="call-link">📞 ${b.sdt}</a></div>
+                    <div class="booking-info">📅 ${b.ngayDi ? b.ngayDi.split('T')[0] : ''} ${b.gioDi ? b.gioDi.split('T')[1]?.substring(0,5) : ''} | ${b.loaiXe}</div>
+                    <div class="booking-info">💰 ${Number(b.giaTri).toLocaleString('vi-VN')}đ</div>
+                    <div class="booking-actions">
+                        <button class="btn-confirm" onclick="receiveBooking('${b.id}')">✅ Nhận đơn</button>
                     </div>
-                `).join('');
-            }
-            
-            // Đơn của tôi
-            const myBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
-            myBookingCountSpan.innerText = myBookings.length + ' đơn';
-            
-            if (myBookings.length === 0) {
-                myBookingListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Bạn chưa nhận đơn nào</div>';
-            } else {
-                myBookingListDiv.innerHTML = myBookings.map(booking => `
-                    <div class="booking-item">
-                        <span class="booking-status status-${booking.status}">${booking.status === 'confirmed' ? 'Đã nhận' : 'Hoàn thành'}</span>
-                        <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
-                        <div class="booking-info">
-                            <span>👤 ${booking.hoTen}</span>
-                            <a href="tel:${booking.sdt}" class="call-link">📞 ${booking.sdt}</a>
-                        </div>
-                        <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
-                        <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
-                        <div class="booking-actions">
-                            ${booking.status === 'confirmed' ? `<button class="btn-complete" onclick="completeBooking('${booking.id}')">✅ Hoàn thành</button>` : ''}
-                        </div>
+                </div>
+            `).join('');
+        }
+        
+        // Đơn của tôi
+        const my = allBookings.filter(b => b.driverPhone === currentDriver.phone);
+        document.getElementById('myBookingCount').innerText = my.length + ' đơn';
+        
+        if(my.length === 0) {
+            document.getElementById('myBookingList').innerHTML = '<div style="text-align:center; padding:20px;">📭 Bạn chưa nhận đơn nào</div>';
+        } else {
+            document.getElementById('myBookingList').innerHTML = my.map(b => `
+                <div class="booking-item">
+                    <span class="booking-status status-${b.status}">${b.status === 'confirmed' ? 'Đã nhận' : b.status === 'completed' ? 'Hoàn thành' : 'Chờ nhận'}</span>
+                    <div class="booking-route">${b.diemDi} → ${b.diemDen}</div>
+                    <div class="booking-info"><span>👤 ${b.hoTen}</span><a href="tel:${b.sdt}" class="call-link">📞 ${b.sdt}</a></div>
+                    <div class="booking-info">📅 ${b.ngayDi ? b.ngayDi.split('T')[0] : ''} ${b.gioDi ? b.gioDi.split('T')[1]?.substring(0,5) : ''} | ${b.loaiXe}</div>
+                    <div class="booking-info">💰 ${Number(b.giaTri).toLocaleString('vi-VN')}đ</div>
+                    <div class="booking-actions">
+                        ${b.status === 'confirmed' ? `<button class="btn-complete" onclick="completeBooking('${b.id}')">✅ Hoàn thành</button>` : ''}
                     </div>
-                `).join('');
-            }
-            
-            if (currentTab === 'history') calculateRevenue();
-        });
+                </div>
+            `).join('');
+        }
+        
+        if(currentTab === 'history') calculateRevenue();
     }
     
     // ==================== NHẬN ĐƠN ====================
-    function receiveBooking(bookingId) {
-        callAPI("updateBookingStatus", { bookingId, newStatus: 'confirmed', driverPhone: currentDriver.phone }, (result) => {
-            if (result && result.status === "success") {
-                alert("✅ Bạn đã nhận đơn thành công!");
-                loadBookings();
-            } else {
-                alert("❌ " + (result?.message || "Lỗi!"));
-            }
-        });
+    async function receiveBooking(bookingId) {
+        const result = await callAPI("updateBookingStatus", { bookingId, newStatus: 'confirmed', driverPhone: currentDriver.phone });
+        if(result.status === "success") {
+            alert("✅ Nhận đơn thành công!");
+            loadBookings();
+        } else {
+            alert("❌ " + result.message);
+        }
     }
     
     // ==================== HOÀN THÀNH ĐƠN ====================
-    function completeBooking(bookingId) {
-        callAPI("updateBookingStatus", { bookingId, newStatus: 'completed', driverPhone: currentDriver.phone }, (result) => {
-            if (result && result.status === "success") {
-                alert("✅ Đã hoàn thành đơn hàng!");
-                loadBookings();
-            } else {
-                alert("❌ " + (result?.message || "Lỗi!"));
-            }
-        });
+    async function completeBooking(bookingId) {
+        const result = await callAPI("updateBookingStatus", { bookingId, newStatus: 'completed', driverPhone: currentDriver.phone });
+        if(result.status === "success") {
+            alert("✅ Hoàn thành đơn!");
+            loadBookings();
+        } else {
+            alert("❌ " + result.message);
+        }
     }
     
     // ==================== TÍNH THU NHẬP ====================
     function calculateRevenue() {
-        if (!currentDriver) return;
-        
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
-        const completedBookings = allBookings.filter(b => 
-            b.driverPhone === currentDriver.phone && 
-            b.status === 'completed'
-        );
-        
-        const totalTrips = completedBookings.length;
-        const totalRevenue = completedBookings.reduce((sum, b) => sum + Number(b.giaTri), 0);
-        
-        totalTripsSpan.innerText = totalTrips;
-        totalRevenueSpan.innerText = totalRevenue.toLocaleString('vi-VN') + 'đ';
-        
-        if (completedBookings.length === 0) {
-            historyListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Chưa có chuyến nào hoàn thành</div>';
-        } else {
-            historyListDiv.innerHTML = completedBookings.map(b => `
-                <div class="booking-item" style="margin-bottom: 8px;">
-                    <div class="booking-route">${b.diemDi} → ${b.diemDen}</div>
-                    <div class="booking-info">👤 ${b.hoTen} | ${b.loaiXe}</div>
-                    <div class="booking-info">💰 ${Number(b.giaTri).toLocaleString('vi-VN')}đ</div>
-                    <div class="booking-info">📅 ${b.ngayDi} ${b.gioDi}</div>
-                </div>
-            `).join('');
-        }
+        if(!currentDriver) return;
+        const completed = allBookings.filter(b => b.driverPhone === currentDriver.phone && b.status === 'completed');
+        document.getElementById('totalTrips').innerText = completed.length;
+        document.getElementById('totalRevenue').innerText = completed.reduce((s,b) => s + Number(b.giaTri), 0).toLocaleString('vi-VN') + 'đ';
+        document.getElementById('historyList').innerHTML = completed.length ? completed.map(b => `
+            <div class="booking-item"><div class="booking-route">${b.diemDi} → ${b.diemDen}</div><div class="booking-info">👤 ${b.hoTen} | ${b.loaiXe}</div><div class="booking-info">💰 ${Number(b.giaTri).toLocaleString('vi-VN')}đ</div><div class="booking-info">📅 ${b.ngayDi ? b.ngayDi.split('T')[0] : ''} ${b.gioDi ? b.gioDi.split('T')[1]?.substring(0,5) : ''}</div></div>
+        `).join('') : '<div style="text-align:center; padding:20px;">📭 Chưa có chuyến nào hoàn thành</div>';
     }
     
-    function logoutDriver() {
-        currentDriver = null;
-        sessionStorage.removeItem('currentDriver');
-        updateDriverUI();
-    }
-    
-    function updateDriverUI() {
-        const savedDriver = sessionStorage.getItem('currentDriver');
-        if (savedDriver) {
-            currentDriver = JSON.parse(savedDriver);
+    function logoutDriver() { currentDriver = null; sessionStorage.removeItem('currentDriver'); updateUI(); }
+    function updateUI() {
+        const saved = sessionStorage.getItem('currentDriver');
+        if(saved) {
+            currentDriver = JSON.parse(saved);
             document.getElementById('driverNotLogged').style.display = 'none';
             document.getElementById('driverLogged').style.display = 'block';
-            driverNameSpan.innerText = currentDriver.name;
-            driverPhoneSpan.innerText = currentDriver.phone;
+            document.getElementById('driverName').innerText = currentDriver.name;
+            document.getElementById('driverPhone').innerText = currentDriver.phone;
             loadBookings();
         } else {
             document.getElementById('driverNotLogged').style.display = 'block';
@@ -432,111 +269,71 @@
         document.getElementById('pendingPanel').style.display = tab === 'pending' ? 'block' : 'none';
         document.getElementById('myBookingsPanel').style.display = tab === 'my' ? 'block' : 'none';
         document.getElementById('historyPanel').style.display = tab === 'history' ? 'block' : 'none';
-        
         document.getElementById('tabPending').className = tab === 'pending' ? 'driver-subtab active' : 'driver-subtab inactive';
         document.getElementById('tabMyBookings').className = tab === 'my' ? 'driver-subtab active' : 'driver-subtab inactive';
         document.getElementById('tabHistory').className = tab === 'history' ? 'driver-subtab active' : 'driver-subtab inactive';
-        
-        if (tab === 'history') calculateRevenue();
-        else loadBookings();
+        if(tab === 'history') calculateRevenue(); else loadBookings();
     }
     
     // ==================== MODALS ====================
-    const modals = {
-        login: document.getElementById('loginModal'),
-        register: document.getElementById('registerModal'),
-        forgot: document.getElementById('forgotModal')
-    };
+    const modals = { login: document.getElementById('loginModal'), register: document.getElementById('registerModal'), forgot: document.getElementById('forgotModal') };
+    function showModal(m) { if(m) m.classList.add('active'); }
+    function hideModal(m) { if(m) m.classList.remove('active'); }
     
-    function showModal(modal) { if(modal) modal.classList.add('active'); }
-    function hideModal(modal) { if(modal) modal.classList.remove('active'); }
-    
-    // Đăng nhập
     document.getElementById('openLoginBtn').onclick = () => showModal(modals.login);
     document.getElementById('closeLoginModal').onclick = () => hideModal(modals.login);
-    document.getElementById('confirmLoginBtn').onclick = () => {
+    document.getElementById('confirmLoginBtn').onclick = async () => {
         const phone = document.getElementById('loginPhone').value.trim();
         const password = document.getElementById('loginPassword').value;
-        loginDriver(phone, password, (result) => {
-            alert(result.message);
-            if (result.success) {
-                hideModal(modals.login);
-                updateDriverUI();
-                document.getElementById('loginPhone').value = '';
-                document.getElementById('loginPassword').value = '';
-            }
-        });
+        const r = await loginDriver(phone, password);
+        alert(r.message);
+        if(r.success) { hideModal(modals.login); updateUI(); document.getElementById('loginPhone').value = ''; document.getElementById('loginPassword').value = ''; }
     };
     
-    // Đăng ký
     document.getElementById('openRegisterBtn').onclick = () => showModal(modals.register);
     document.getElementById('closeRegisterModal').onclick = () => hideModal(modals.register);
-    document.getElementById('confirmRegisterBtn').onclick = () => {
+    document.getElementById('confirmRegisterBtn').onclick = async () => {
         const name = document.getElementById('regName').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
         const plate = document.getElementById('regPlate').value.trim();
         const carType = document.getElementById('regCarType').value;
         const password = document.getElementById('regPassword').value;
         const confirm = document.getElementById('regConfirmPassword').value;
-        
-        if (!name || !phone || !password) { alert("Vui lòng nhập đầy đủ thông tin"); return; }
-        if (password !== confirm) { alert("Mật khẩu xác nhận không khớp"); return; }
-        
-        registerDriver(name, phone, plate, carType, password, (result) => {
-            alert(result.message);
-            if (result.success) {
-                hideModal(modals.register);
-                document.getElementById('regName').value = '';
-                document.getElementById('regPhone').value = '';
-                document.getElementById('regPlate').value = '';
-                document.getElementById('regPassword').value = '';
-                document.getElementById('regConfirmPassword').value = '';
-            }
-        });
+        if(!name || !phone || !password) { alert("Vui lòng nhập đầy đủ thông tin"); return; }
+        if(password !== confirm) { alert("Mật khẩu xác nhận không khớp"); return; }
+        const r = await registerDriver(name, phone, plate, carType, password);
+        alert(r.message);
+        if(r.success) { hideModal(modals.register); document.getElementById('regName').value = ''; document.getElementById('regPhone').value = ''; document.getElementById('regPlate').value = ''; document.getElementById('regPassword').value = ''; document.getElementById('regConfirmPassword').value = ''; }
     };
     
-    // Quên mật khẩu
-    document.getElementById('forgotLink').onclick = () => {
-        hideModal(modals.login);
-        showModal(modals.forgot);
-    };
+    document.getElementById('forgotLink').onclick = () => { hideModal(modals.login); showModal(modals.forgot); };
     document.getElementById('closeForgotModal').onclick = () => hideModal(modals.forgot);
-    document.getElementById('confirmForgotBtn').onclick = () => {
+    document.getElementById('confirmForgotBtn').onclick = async () => {
         const phone = document.getElementById('forgotPhone').value.trim();
         const email = document.getElementById('forgotEmail').value.trim();
-        resetPassword(phone, email, (result) => {
-            alert(result.message);
-            if (result.success) hideModal(modals.forgot);
-        });
+        const r = await resetPassword(phone, email);
+        alert(r.message);
+        if(r.success) hideModal(modals.forgot);
     };
     
-    // Đăng xuất
-    document.getElementById('logoutBtn').onclick = () => {
-        logoutDriver();
-        updateDriverUI();
-    };
-    
-    // Tab
+    document.getElementById('logoutBtn').onclick = () => { logoutDriver(); updateUI(); };
     document.getElementById('tabPending').onclick = () => switchTab('pending');
     document.getElementById('tabMyBookings').onclick = () => switchTab('my');
     document.getElementById('tabHistory').onclick = () => switchTab('history');
     
-    // Filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = btn.getAttribute('data-filter');
             calculateRevenue();
-        });
+        };
     });
     
-    // Global
     window.receiveBooking = receiveBooking;
     window.completeBooking = completeBooking;
     
-    // Khởi tạo
-    updateDriverUI();
+    updateUI();
 </script>
 </body>
 </html>
