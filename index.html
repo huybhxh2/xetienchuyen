@@ -3,492 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>Vận tải kết nối - Đặt xe & Tài xế</title>
+<title>Đặt xe - Vận tải kết nối</title>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-        background: #f5f7fb;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        padding: 0;
-        min-height: 100vh;
-    }
-
-    .app-container {
-        max-width: 500px;
-        margin: 0 auto;
-        background: #ffffff;
-        min-height: 100vh;
-        box-shadow: 0 0 20px rgba(0,0,0,0.05);
-        position: relative;
-    }
-
-    .app-header {
-        background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-        padding: 20px 20px 24px;
-        color: white;
-        border-radius: 0 0 24px 24px;
-    }
-
-    .app-header h1 {
-        font-size: 1.6rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 6px;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .app-header p {
-        font-size: 0.8rem;
-        opacity: 0.85;
-    }
-
-    .driver-btn {
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.3);
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s;
-    }
-
-    .driver-btn:active {
-        background: rgba(255,255,255,0.3);
-        transform: scale(0.96);
-    }
-
-    .tabs {
-        display: flex;
-        background: white;
-        border-bottom: 1px solid #e2e8f0;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .tab {
-        flex: 1;
-        text-align: center;
-        padding: 14px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #8a99a8;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-    }
-
-    .tab.active {
-        color: #0066cc;
-        border-bottom-color: #0066cc;
-    }
-
-    .tab-content {
-        display: none;
-        padding: 20px;
-    }
-
-    .tab-content.active {
-        display: block;
-    }
-
-    .form-group {
-        margin-bottom: 18px;
-        position: relative;
-    }
-
-    .form-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #5a6874;
-        margin-bottom: 6px;
-        display: block;
-    }
-
-    .input-wrapper {
-        position: relative;
-    }
-
-    .input-icon {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1rem;
-        pointer-events: none;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 14px 16px 14px 42px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 14px;
-        font-size: 0.95rem;
-        background: white;
-    }
-
-    input:focus {
-        outline: none;
-        border-color: #0066cc;
-        box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
-    }
-
-    .autocomplete-list {
-        position: absolute;
-        top: calc(100% + 4px);
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 100;
-        display: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    }
-
-    .autocomplete-list div {
-        padding: 12px 16px;
-        cursor: pointer;
-        border-bottom: 1px solid #f0f2f5;
-    }
-
-    .autocomplete-list div:hover {
-        background: #0066cc;
-        color: white;
-    }
-
-    .btn-group {
-        display: flex;
-        gap: 12px;
-        margin: 20px 0;
-    }
-
-    .btn {
-        padding: 12px 16px;
-        border-radius: 14px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.2s;
-    }
-
-    .btn:active {
-        transform: scale(0.97);
-    }
-
-    .btn-primary {
-        background: #0066cc;
-        color: white;
-    }
-
-    .btn-secondary {
-        background: #f1f5f9;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-    }
-
-    .service-type {
-        background: #f8fafc;
-        padding: 10px;
-        border-radius: 14px;
-        display: flex;
-        gap: 16px;
-        margin: 14px 0 18px;
-    }
-
-    .service-option {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px;
-        border-radius: 12px;
-        background: white;
-        border: 1px solid #e2e8f0;
-        cursor: pointer;
-    }
-
-    .service-option.active {
-        background: #0066cc !important;
-        color: white !important;
-        border-color: #0066cc !important;
-    }
-
-    .service-option input {
-        display: none;
-    }
-
-    .result-card {
-        background: #f8fafc;
-        border-radius: 20px;
-        padding: 18px;
-        margin: 16px 0;
-        border: 1px solid #e8edf2;
-    }
-
-    .price-tc {
-        color: #0066cc;
-        font-weight: 800;
-        font-size: 1.2rem;
-    }
-
-    .price-bx {
-        color: #dc2626;
-        font-weight: 800;
-        font-size: 1.2rem;
-    }
-
-    .driver-info {
-        background: #f0f7ff;
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .driver-avatar {
-        width: 50px;
-        height: 50px;
-        background: #0066cc;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: white;
-    }
-
-    .driver-details {
-        flex: 1;
-    }
-
-    .driver-name {
-        font-weight: 700;
-        font-size: 1rem;
-    }
-
-    .driver-phone {
-        font-size: 0.8rem;
-        color: #6b7a8a;
-    }
-
-    .logout-btn {
-        background: #fee2e2;
-        color: #dc2626;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .booking-item {
-        background: #f8fafc;
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 12px;
-        border: 1px solid #e2e8f0;
-    }
-
-    .booking-status {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-confirmed { background: #d1fae5; color: #065f46; }
-    .status-completed { background: #e0e7ff; color: #3730a3; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
-
-    .booking-route {
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    .booking-info {
-        font-size: 0.75rem;
-        color: #6b7a8a;
-        margin-bottom: 4px;
-    }
-
-    .booking-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .booking-actions button {
-        flex: 1;
-        padding: 8px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-confirm { background: #10b981; color: white; }
-    .btn-complete { background: #3b82f6; color: white; }
-    .btn-cancel { background: #ef4444; color: white; }
-
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .modal.active {
-        display: flex;
-    }
-
-    .modal-content {
-        background: white;
-        border-radius: 28px;
-        max-width: 400px;
-        width: 100%;
-        overflow: hidden;
-        animation: modalSlideIn 0.3s ease;
-    }
-
-    @keyframes modalSlideIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .modal-header {
-        background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-        padding: 20px;
-        color: white;
-        text-align: center;
-    }
-
-    .modal-header h3 {
-        font-size: 1.3rem;
-        margin-bottom: 4px;
-    }
-
-    .modal-body {
-        padding: 24px;
-    }
-
-    .modal-footer {
-        padding: 16px 20px;
-        border-top: 1px solid #eef2f6;
-        display: flex;
-        gap: 12px;
-    }
-
-    .toast-message {
-        margin-top: 16px;
-        padding: 12px 16px;
-        border-radius: 14px;
-        text-align: center;
-        font-weight: 500;
-        font-size: 0.8rem;
-        animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { background: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 0; min-height: 100vh; }
+    .app-container { max-width: 500px; margin: 0 auto; background: #ffffff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    .app-header { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); padding: 20px; color: white; border-radius: 0 0 24px 24px; }
+    .app-header h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .driver-link { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; font-weight: 600; color: white; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .form-group { margin-bottom: 18px; position: relative; }
+    .form-label { font-size: 0.75rem; font-weight: 600; color: #5a6874; margin-bottom: 6px; display: block; }
+    .input-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; }
+    input, select { width: 100%; padding: 14px 16px 14px 42px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; background: white; }
+    input:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgba(0,102,204,0.1); }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .autocomplete-list div { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f2f5; }
+    .autocomplete-list div:hover { background: #0066cc; color: white; }
+    .btn-group { display: flex; gap: 12px; margin: 20px 0; }
+    .btn { padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: #0066cc; color: white; }
+    .btn-secondary { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
+    .service-type { background: #f8fafc; padding: 10px; border-radius: 14px; display: flex; gap: 16px; margin: 14px 0 18px; }
+    .service-option { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; background: white; border: 1px solid #e2e8f0; cursor: pointer; }
+    .service-option.active { background: #0066cc !important; color: white !important; border-color: #0066cc !important; }
+    .service-option input { display: none; }
+    .result-card { background: #f8fafc; border-radius: 20px; padding: 18px; margin: 16px 0; border: 1px solid #e8edf2; }
+    .price-tc { color: #0066cc; font-weight: 800; font-size: 1.2rem; }
+    .price-bx { color: #dc2626; font-weight: 800; font-size: 1.2rem; }
+    .toast-message { margin-top: 16px; padding: 12px 16px; border-radius: 14px; text-align: center; font-weight: 500; font-size: 0.8rem; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     .toast-success { background: #d1fae5; color: #065f46; }
     .toast-error { background: #fee2e2; color: #991b1b; }
     .toast-loading { background: #fef3c7; color: #92400e; }
-
-    .app-footer {
-        text-align: center;
-        padding: 16px 20px;
-        font-size: 0.65rem;
-        color: #8a99a8;
-        border-top: 1px solid #eef2f6;
-        margin-top: 20px;
-    }
-
-    .flex-between {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .form-row {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .form-row .form-group {
-        flex: 1;
-        margin-bottom: 0;
-    }
-
-    .link-text {
-        color: #0066cc;
-        text-align: center;
-        margin-top: 12px;
-        cursor: pointer;
-        font-size: 0.8rem;
-    }
-    
-    /* Tab con trong tài xế */
-    .driver-subtabs {
-        display: flex;
-        gap: 10px;
-        margin: 16px 0;
-    }
-    .driver-subtab {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .driver-subtab.active {
-        background: #0066cc;
-        color: white;
-    }
-    .driver-subtab.inactive {
-        background: #e2e8f0;
-        color: #1e293b;
-    }
+    .app-footer { text-align: center; padding: 16px 20px; font-size: 0.65rem; color: #8a99a8; border-top: 1px solid #eef2f6; margin-top: 20px; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .form-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -496,18 +48,12 @@
     <div class="app-header">
         <h1>
             🚖 Vận tải kết nối
-            <button class="driver-btn" id="driverLoginBtn">👨‍✈️ Tài xế</button>
+            <a href="driver.html" class="driver-link">👨‍✈️ Tài xế</a>
         </h1>
         <p>Đặt xe trực tuyến • Giá niêm yết • Xác nhận nhanh</p>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" data-tab="booking">📱 Đặt xe</div>
-        <div class="tab" data-tab="driver">👨‍✈️ Tài xế</div>
-    </div>
-
-    <!-- Tab Đặt xe -->
-    <div class="tab-content active" id="tabBooking">
+    <div style="padding: 20px;">
         <div class="form-group">
             <label class="form-label">ĐIỂM ĐI</label>
             <div class="input-wrapper">
@@ -544,130 +90,29 @@
 
         <div class="form-group">
             <label class="form-label">HỌ VÀ TÊN</label>
-            <div class="input-wrapper">
-                <span class="input-icon">👤</span>
-                <input type="text" id="hoTen" placeholder="Nguyễn Văn A">
-            </div>
+            <div class="input-wrapper"><span class="input-icon">👤</span><input type="text" id="hoTen" placeholder="Nguyễn Văn A"></div>
         </div>
 
         <div class="form-group">
             <label class="form-label">SỐ ĐIỆN THOẠI</label>
-            <div class="input-wrapper">
-                <span class="input-icon">📞</span>
-                <input type="tel" id="sdt" placeholder="0912 345 678">
-            </div>
+            <div class="input-wrapper"><span class="input-icon">📞</span><input type="tel" id="sdt" placeholder="0912 345 678"></div>
         </div>
 
         <div class="form-group">
             <label class="form-label">EMAIL</label>
-            <div class="input-wrapper">
-                <span class="input-icon">📧</span>
-                <input type="email" id="email" placeholder="example@gmail.com">
-            </div>
+            <div class="input-wrapper"><span class="input-icon">📧</span><input type="email" id="email" placeholder="example@gmail.com"></div>
         </div>
 
         <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">NGÀY ĐI</label>
-                <input type="date" id="ngayDi">
-            </div>
-            <div class="form-group">
-                <label class="form-label">GIỜ ĐI</label>
-                <input type="time" id="gioDi">
-            </div>
+            <div class="form-group"><label class="form-label">NGÀY ĐI</label><input type="date" id="ngayDi"></div>
+            <div class="form-group"><label class="form-label">GIỜ ĐI</label><input type="time" id="gioDi"></div>
         </div>
 
         <button class="btn btn-primary" id="btnDatXe" style="width:100%; padding:14px;">🚀 XÁC NHẬN ĐẶT XE</button>
         <div id="thongBao"></div>
     </div>
 
-    <!-- Tab Tài xế -->
-    <div class="tab-content" id="tabDriver">
-        <div id="driverNotLogged" style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 3rem; margin-bottom: 16px;">👨‍✈️</div>
-            <h3 style="margin-bottom: 8px;">Khu vực dành cho Tài xế</h3>
-            <p style="color: #6b7a8a; margin-bottom: 24px;">Đăng nhập để xem và nhận đơn hàng</p>
-            <button class="btn btn-primary" id="openDriverLogin" style="width:100%">Đăng nhập</button>
-            <p class="link-text" id="openDriverRegister">Chưa có tài khoản? Đăng ký ngay</p>
-        </div>
-        <div id="driverLogged" style="display: none;">
-            <div class="driver-info">
-                <div class="driver-avatar">👨‍✈️</div>
-                <div class="driver-details">
-                    <div class="driver-name" id="driverName"></div>
-                    <div class="driver-phone" id="driverPhone"></div>
-                </div>
-                <button class="logout-btn" id="logoutBtn">Đăng xuất</button>
-            </div>
-            
-            <!-- Tab con -->
-            <div class="driver-subtabs">
-                <button id="tabPending" class="driver-subtab active">📋 Đơn chờ nhận</button>
-                <button id="tabMyBookings" class="driver-subtab inactive">✅ Đơn của tôi</button>
-            </div>
-            
-            <div class="flex-between" style="margin-bottom: 16px;">
-                <h4 id="sectionTitle">📋 Danh sách đơn chờ nhận</h4>
-                <span id="bookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px; font-size:0.7rem;">0 đơn</span>
-            </div>
-            <div id="bookingList"></div>
-        </div>
-    </div>
-
-    <div class="app-footer">
-        ⚡ Dữ liệu trực tiếp từ Google Sheet | Hỗ trợ: 1900 xxxx
-    </div>
-</div>
-
-<!-- Modal Đăng nhập -->
-<div id="loginModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>👨‍✈️ Đăng nhập</h3><p>Nhập thông tin tài khoản</p></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="loginPhone" placeholder="0912 345 678"></div>
-            <div class="form-group"><label class="form-label">MẬT KHẨU</label><div class="input-wrapper"><span class="input-icon">🔒</span><input type="password" id="loginPassword" placeholder="Nhập mật khẩu"></div></div>
-            <p class="link-text" id="forgotPasswordLink">Quên mật khẩu?</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="closeLoginModal">Hủy</button>
-            <button class="btn btn-primary" id="confirmLogin">Đăng nhập</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Đăng ký -->
-<div id="registerModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>📝 Đăng ký tài xế</h3><p>Tham gia đội ngũ của chúng tôi</p></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">HỌ VÀ TÊN</label><input type="text" id="regName" placeholder="Nguyễn Văn A"></div>
-            <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="regPhone" placeholder="0912 345 678"></div>
-            <div class="form-group"><label class="form-label">EMAIL</label><input type="email" id="regEmail" placeholder="example@gmail.com"></div>
-            <div class="form-group"><label class="form-label">BIỂN SỐ XE</label><input type="text" id="regPlate" placeholder="29A-123.45"></div>
-            <div class="form-group"><label class="form-label">LOẠI XE</label><select id="regCarType"><option>4 chỗ</option><option>7 chỗ</option><option>16 chỗ</option></select></div>
-            <div class="form-group"><label class="form-label">MẬT KHẨU</label><input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự"></div>
-            <div class="form-group"><label class="form-label">XÁC NHẬN MẬT KHẨU</label><input type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="closeRegisterModal">Hủy</button>
-            <button class="btn btn-primary" id="confirmRegister">Đăng ký</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Quên mật khẩu -->
-<div id="forgotModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>🔑 Khôi phục mật khẩu</h3></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">SỐ ĐIỆN THOẠI</label><input type="tel" id="forgotPhone" placeholder="0912 345 678"></div>
-            <div class="form-group"><label class="form-label">EMAIL</label><input type="email" id="forgotEmail" placeholder="example@gmail.com"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="closeForgotModal">Hủy</button>
-            <button class="btn btn-primary" id="confirmForgot">Gửi yêu cầu</button>
-        </div>
-    </div>
+    <div class="app-footer">⚡ Dữ liệu trực tiếp từ Google Sheet | Hỗ trợ: 1900 xxxx</div>
 </div>
 
 <script>
@@ -676,15 +121,9 @@
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
     const API_URL = "https://script.google.com/macros/s/AKfycbw186RsTclzHo9bjwLkBmvZz6p2YoQXBfX6GX8hZXXhq6cJ3KCcy-4wqzC62U11M1-x/exec";
     
-    // State
     let danhSachTuyen = [];
     let danhSachDiaDanh = [];
-    let currentDriver = JSON.parse(localStorage.getItem('currentDriver') || 'null');
-    let drivers = JSON.parse(localStorage.getItem('drivers') || '[]');
-    let allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    let currentDriverTab = 'pending'; // 'pending' hoặc 'my'
     
-    // DOM elements
     const diemDiInput = document.getElementById('diemDi');
     const diemDenInput = document.getElementById('diemDen');
     const autoDiDiv = document.getElementById('autocompleteDi');
@@ -692,181 +131,21 @@
     const ketQuaDiv = document.getElementById('ketQuaContainer');
     const thongBaoDiv = document.getElementById('thongBao');
     
-    // Helper functions
     function normalizePlace(str) {
         if (!str) return "";
-        let normalized = str.toLowerCase().trim();
-        normalized = normalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        normalized = normalized.replace(/đ/g, "d").replace(/Đ/g, "d");
-        return normalized.replace(/\s+/g, " ");
+        let n = str.toLowerCase().trim();
+        n = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return n.replace(/đ/g, "d").replace(/\s+/g, " ");
     }
     
-    function isSameLocation(loc1, loc2) {
-        return normalizePlace(loc1) === normalizePlace(loc2);
-    }
+    function isSameLocation(a, b) { return normalizePlace(a) === normalizePlace(b); }
     
-    function saveDrivers() { localStorage.setItem('drivers', JSON.stringify(drivers)); }
-    function saveCurrentDriver() { localStorage.setItem('currentDriver', JSON.stringify(currentDriver)); }
-    function saveBookings() { localStorage.setItem('bookings', JSON.stringify(allBookings)); }
-    
-    // ==================== GỌI API ====================
-    async function callAPI(action, data) {
-        try {
-            const url = `${API_URL}?action=${action}&data=${encodeURIComponent(JSON.stringify(data))}`;
-            await fetch(url, { method: 'GET', mode: 'no-cors' });
-            return { status: "success" };
-        } catch (error) {
-            console.error("API Error:", error);
-            return { status: "error", message: error.message };
-        }
-    }
-    
-    // ==================== QUẢN LÝ TÀI KHOẢN ====================
-    async function registerDriver(name, phone, email, plate, carType, password) {
-        if (drivers.find(d => d.phone === phone)) {
-            return { success: false, message: "Số điện thoại đã đăng ký!" };
-        }
-        if (password.length < 6) {
-            return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
-        }
-        
-        const newDriver = {
-            id: "DR" + Date.now(),
-            name, phone, email, plate, carType,
-            password: btoa(password),
-            status: 'active',
-            createdAt: new Date().toISOString()
-        };
-        drivers.push(newDriver);
-        saveDrivers();
-        callAPI("register", { name, phone, email, plate, carType, password });
-        return { success: true, message: "Đăng ký thành công!" };
-    }
-    
-    async function loginDriver(phone, password) {
-        const hashedPassword = btoa(password);
-        const driver = drivers.find(d => d.phone === phone && d.password === hashedPassword);
-        if (!driver) {
-            return { success: false, message: "Số điện thoại hoặc mật khẩu không đúng!" };
-        }
-        if (driver.status !== 'active') {
-            return { success: false, message: "Tài khoản đã bị khóa! Vui lòng liên hệ Admin." };
-        }
-        currentDriver = driver;
-        saveCurrentDriver();
-        return { success: true, message: "Đăng nhập thành công!", driver };
-    }
-    
-    async function resetPassword(phone, email) {
-        const driver = drivers.find(d => d.phone === phone && d.email === email);
-        if (!driver) {
-            return { success: false, message: "Không tìm thấy tài khoản!" };
-        }
-        const newPassword = Math.random().toString(36).substring(2, 8);
-        driver.password = btoa(newPassword);
-        saveDrivers();
-        callAPI("resetPassword", { phone, email, newPassword });
-        return { success: true, message: `Mật khẩu mới của bạn: ${newPassword}` };
-    }
-    
-    function logoutDriver() {
-        currentDriver = null;
-        localStorage.removeItem('currentDriver');
-    }
-    
-    // ==================== ĐƠN HÀNG ====================
-    function createBooking(bookingData) {
-        const newBooking = {
-            id: "BK" + Date.now(),
-            ...bookingData,
-            status: 'pending',
-            driverPhone: null,
-            timestamp: new Date().toISOString()
-        };
-        allBookings.push(newBooking);
-        saveBookings();
-        callAPI("createBooking", bookingData);
-        return { success: true, bookingId: newBooking.id };
-    }
-    
-    function loadDriverBookings() {
-        if (!currentDriver) return;
-        
-        let filteredBookings = [];
-        if (currentDriverTab === 'pending') {
-            // Đơn đang chờ, chưa có tài xế
-            filteredBookings = allBookings.filter(b => b.status === 'pending' && !b.driverPhone);
-        } else {
-            // Đơn đã nhận của tài xế này
-            filteredBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
-        }
-        
-        const bookingList = document.getElementById('bookingList');
-        document.getElementById('bookingCount').innerText = filteredBookings.length + ' đơn';
-        document.getElementById('sectionTitle').innerHTML = currentDriverTab === 'pending' ? '📋 Danh sách đơn chờ nhận' : '✅ Đơn đã nhận';
-        
-        if (filteredBookings.length === 0) {
-            bookingList.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Không có đơn hàng nào</div>';
-            return;
-        }
-        
-        bookingList.innerHTML = filteredBookings.map((booking, idx) => {
-            const actualIndex = allBookings.findIndex(b => b.id === booking.id);
-            return `
-            <div class="booking-item">
-                <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
-                <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
-                <div class="booking-info">👤 ${booking.hoTen} | 📞 ${booking.sdt}</div>
-                <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
-                <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
-                <div class="booking-actions">
-                    ${currentDriverTab === 'pending' ? `<button class="btn-confirm" onclick="receiveBooking(${actualIndex})">✅ Nhận đơn</button>` : ''}
-                    ${currentDriverTab === 'my' && booking.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBookingStatus(${actualIndex}, 'completed')">✅ Hoàn thành</button>` : ''}
-                </div>
-            </div>`;
-        }).join('');
-    }
-    
-    function receiveBooking(index) {
-        if (allBookings[index] && allBookings[index].status === 'pending' && !allBookings[index].driverPhone) {
-            allBookings[index].driverPhone = currentDriver.phone;
-            allBookings[index].status = 'confirmed';
-            saveBookings();
-            callAPI("updateBookingStatus", { 
-                bookingId: allBookings[index].id, 
-                newStatus: 'confirmed', 
-                driverPhone: currentDriver.phone 
-            });
-            alert("✅ Bạn đã nhận đơn thành công!");
-            loadDriverBookings();
-        }
-    }
-    
-    window.updateBookingStatus = function(index, newStatus) {
-        if (allBookings[index]) {
-            allBookings[index].status = newStatus;
-            saveBookings();
-            loadDriverBookings();
-            callAPI("updateBookingStatus", { 
-                bookingId: allBookings[index].id, 
-                newStatus, 
-                driverPhone: currentDriver?.phone 
-            });
-        }
-    };
-    
-    function getStatusText(status) {
-        const map = { pending: 'Chờ nhận', confirmed: 'Đã nhận', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
-        return map[status] || status;
-    }
-    
-    // ==================== LOAD BẢNG GIÁ ====================
     async function loadDataFromSheet() {
         try {
             const response = await fetch(`${CSV_URL}&_t=${Date.now()}`, { cache: 'no-store' });
             const csvText = await response.text();
             const rows = parseCSV(csvText);
-            if (rows.length < 2) throw new Error("No data");
+            if (rows.length < 2) return;
             
             const headers = rows[0].map(h => h.trim());
             const idxDi = headers.findIndex(h => h === "Điểm đi");
@@ -898,19 +177,18 @@
     }
     
     function parseCSV(csvString) {
-        const rows = [];
-        const lines = csvString.split(/\r?\n/);
+        const rows = [], lines = csvString.split(/\r?\n/);
         for (let line of lines) {
             if (!line.trim()) continue;
             const row = [];
-            let inQuote = false, current = '';
+            let inQuote = false, cur = '';
             for (let i = 0; i < line.length; i++) {
                 const c = line[i];
                 if (c === '"') inQuote = !inQuote;
-                else if (c === ',' && !inQuote) { row.push(current.trim()); current = ''; }
-                else current += c;
+                else if (c === ',' && !inQuote) { row.push(cur.trim()); cur = ''; }
+                else cur += c;
             }
-            row.push(current.trim());
+            row.push(cur.trim());
             rows.push(row);
         }
         return rows;
@@ -935,39 +213,17 @@
         });
     }
     
-    // ==================== TRA CỨU GIÁ ====================
     function traCuuGia() {
         const di = diemDiInput.value.trim(), den = diemDenInput.value.trim();
-        if (!di || !den) {
-            ketQuaDiv.innerHTML = '<div class="toast-message toast-error">❗ Nhập điểm đi và đến</div>';
-            return;
-        }
-        const tuyen = danhSachTuyen.find(t => 
-            (isSameLocation(t.diemDi, di) && isSameLocation(t.diemDen, den)) || 
-            (isSameLocation(t.diemDi, den) && isSameLocation(t.diemDen, di))
-        );
-        if (!tuyen) {
-            ketQuaDiv.innerHTML = `<div class="toast-message toast-error">🚫 Không tìm thấy tuyến: ${di} → ${den}</div>`;
-            return;
-        }
-        ketQuaDiv.innerHTML = `
-            <div class="result-card">
-                <div class="flex-between"><strong>🚩 Đi:</strong> ${tuyen.diemDi} → <strong>🏁 Đến:</strong> ${tuyen.diemDen}</div>
-                <div style="margin:10px 0">🛣️ ${tuyen.km} km</div>
-                <div class="flex-between" style="margin-top:8px"><span>🚗 Tiện chuyến</span><span class="price-tc">${tuyen.giaTienChuyen.toLocaleString('vi-VN')}đ</span></div>
-                <div class="flex-between"><span>🚙 Bao xe</span><span class="price-bx">${tuyen.giaBaoXe.toLocaleString('vi-VN')}đ</span></div>
-            </div>`;
+        if (!di || !den) { ketQuaDiv.innerHTML = '<div class="toast-message toast-error">❗ Nhập điểm đi và đến</div>'; return; }
+        const tuyen = danhSachTuyen.find(t => (isSameLocation(t.diemDi, di) && isSameLocation(t.diemDen, den)) || (isSameLocation(t.diemDi, den) && isSameLocation(t.diemDen, di)));
+        if (!tuyen) { ketQuaDiv.innerHTML = `<div class="toast-message toast-error">🚫 Không tìm thấy tuyến: ${di} → ${den}</div>`; return; }
+        ketQuaDiv.innerHTML = `<div class="result-card"><div class="flex-between"><strong>🚩 Đi:</strong> ${tuyen.diemDi} → <strong>🏁 Đến:</strong> ${tuyen.diemDen}</div><div>🛣️ ${tuyen.km} km</div><div class="flex-between"><span>🚗 Tiện chuyến</span><span class="price-tc">${tuyen.giaTienChuyen.toLocaleString('vi-VN')}đ</span></div><div class="flex-between"><span>🚙 Bao xe</span><span class="price-bx">${tuyen.giaBaoXe.toLocaleString('vi-VN')}đ</span></div></div>`;
         window.lastRoute = tuyen;
     }
     
-    function doiViTri() {
-        const temp = diemDiInput.value;
-        diemDiInput.value = diemDenInput.value;
-        diemDenInput.value = temp;
-        traCuuGia();
-    }
+    function doiViTri() { const t = diemDiInput.value; diemDiInput.value = diemDenInput.value; diemDenInput.value = t; traCuuGia(); }
     
-    // ==================== ĐẶT XE ====================
     function datXe() {
         const hoTen = document.getElementById('hoTen').value.trim();
         const sdt = document.getElementById('sdt').value.trim();
@@ -978,14 +234,8 @@
         const diemDen = diemDenInput.value.trim();
         const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
         
-        if (!hoTen || !sdt || !ngayDi || !gioDi) {
-            alert("Nhập đủ thông tin");
-            return;
-        }
-        if (!window.lastRoute) {
-            alert("Tra cứu giá trước khi đặt");
-            return;
-        }
+        if (!hoTen || !sdt || !ngayDi || !gioDi) { alert("Nhập đủ thông tin"); return; }
+        if (!window.lastRoute) { alert("Tra cứu giá trước khi đặt"); return; }
         
         const loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
         const giaTri = loaiXe === "tien_chuyen" ? window.lastRoute.giaTienChuyen : window.lastRoute.giaBaoXe;
@@ -996,139 +246,21 @@
         
         const url = `${API_URL}?action=createBooking&hoTen=${encodeURIComponent(hoTen)}&sdt=${encodeURIComponent(sdt)}&email=${encodeURIComponent(email)}&diemDi=${encodeURIComponent(diemDi)}&diemDen=${encodeURIComponent(diemDen)}&ngayDi=${encodeURIComponent(ngayDi)}&gioDi=${encodeURIComponent(gioDi)}&loaiXe=${encodeURIComponent(loaiXeText)}&giaTri=${giaTri}`;
         
-        window.open(url, '_blank');
         fetch(url, { method: 'GET', mode: 'no-cors' }).catch(e => console.log(e));
         new Image().src = url;
-        
-        const newBooking = {
-            id: "BK" + Date.now(),
-            hoTen, sdt, email, diemDi, diemDen, ngayDi, gioDi,
-            loaiXe: loaiXeText, giaTri, status: 'pending',
-            driverPhone: null, timestamp: new Date().toISOString()
-        };
-        allBookings.push(newBooking);
-        saveBookings();
         
         thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công!</div>';
         document.getElementById('hoTen').value = '';
         document.getElementById('sdt').value = '';
         document.getElementById('email').value = '';
-        setTimeout(() => thongBaoDiv.innerHTML = '', 4000);
+        setTimeout(() => thongBaoDiv.innerHTML = '', 3000);
     }
     
-    // ==================== TÀI XẾ UI ====================
-    function updateDriverUI() {
-        if (currentDriver) {
-            document.getElementById('driverNotLogged').style.display = 'none';
-            document.getElementById('driverLogged').style.display = 'block';
-            document.getElementById('driverName').innerText = currentDriver.name;
-            document.getElementById('driverPhone').innerText = currentDriver.phone;
-            loadDriverBookings();
-        } else {
-            document.getElementById('driverNotLogged').style.display = 'block';
-            document.getElementById('driverLogged').style.display = 'none';
-        }
+    function setDefaultDateTime() {
+        document.getElementById('ngayDi').value = new Date().toISOString().split('T')[0];
+        document.getElementById('gioDi').value = '08:00';
     }
     
-    // ==================== MODAL HANDLERS ====================
-    const modals = {
-        login: document.getElementById('loginModal'),
-        register: document.getElementById('registerModal'),
-        forgot: document.getElementById('forgotModal')
-    };
-    
-    function showModal(modal) { if(modal) modal.classList.add('active'); }
-    function hideModal(modal) { if(modal) modal.classList.remove('active'); }
-    
-    document.getElementById('driverLoginBtn')?.addEventListener('click', () => showModal(modals.login));
-    document.getElementById('openDriverLogin')?.addEventListener('click', () => showModal(modals.login));
-    document.getElementById('closeLoginModal')?.addEventListener('click', () => hideModal(modals.login));
-    document.getElementById('confirmLogin')?.addEventListener('click', async () => {
-        const phone = document.getElementById('loginPhone').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const result = await loginDriver(phone, password);
-        alert(result.message);
-        if (result.success) {
-            hideModal(modals.login);
-            updateDriverUI();
-            document.querySelector('.tab[data-tab="driver"]').click();
-            document.getElementById('loginPhone').value = '';
-            document.getElementById('loginPassword').value = '';
-        }
-    });
-    
-    document.getElementById('openDriverRegister')?.addEventListener('click', () => showModal(modals.register));
-    document.getElementById('closeRegisterModal')?.addEventListener('click', () => hideModal(modals.register));
-    document.getElementById('confirmRegister')?.addEventListener('click', async () => {
-        const name = document.getElementById('regName').value.trim();
-        const phone = document.getElementById('regPhone').value.trim();
-        const email = document.getElementById('regEmail').value.trim();
-        const plate = document.getElementById('regPlate').value.trim();
-        const carType = document.getElementById('regCarType').value;
-        const password = document.getElementById('regPassword').value;
-        const confirm = document.getElementById('regConfirmPassword').value;
-        
-        if (!name || !phone || !password) { alert("Vui lòng nhập đầy đủ thông tin"); return; }
-        if (password !== confirm) { alert("Mật khẩu xác nhận không khớp"); return; }
-        
-        const result = await registerDriver(name, phone, email, plate, carType, password);
-        alert(result.message);
-        if (result.success) {
-            hideModal(modals.register);
-            document.getElementById('regName').value = '';
-            document.getElementById('regPhone').value = '';
-            document.getElementById('regEmail').value = '';
-            document.getElementById('regPlate').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regConfirmPassword').value = '';
-        }
-    });
-    
-    document.getElementById('forgotPasswordLink')?.addEventListener('click', () => {
-        hideModal(modals.login);
-        showModal(modals.forgot);
-    });
-    document.getElementById('closeForgotModal')?.addEventListener('click', () => hideModal(modals.forgot));
-    document.getElementById('confirmForgot')?.addEventListener('click', async () => {
-        const phone = document.getElementById('forgotPhone').value.trim();
-        const email = document.getElementById('forgotEmail').value.trim();
-        const result = await resetPassword(phone, email);
-        alert(result.message);
-        if (result.success) hideModal(modals.forgot);
-    });
-    
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {
-        logoutDriver();
-        updateDriverUI();
-    });
-    
-    // Tab chính
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            tab.classList.add('active');
-            document.getElementById(`tab${tab.dataset.tab === 'booking' ? 'Booking' : 'Driver'}`).classList.add('active');
-            if (tab.dataset.tab === 'driver') updateDriverUI();
-        });
-    });
-    
-    // Tab con trong tài xế
-    document.getElementById('tabPending')?.addEventListener('click', () => {
-        currentDriverTab = 'pending';
-        document.getElementById('tabPending').className = 'driver-subtab active';
-        document.getElementById('tabMyBookings').className = 'driver-subtab inactive';
-        loadDriverBookings();
-    });
-    
-    document.getElementById('tabMyBookings')?.addEventListener('click', () => {
-        currentDriverTab = 'my';
-        document.getElementById('tabMyBookings').className = 'driver-subtab active';
-        document.getElementById('tabPending').className = 'driver-subtab inactive';
-        loadDriverBookings();
-    });
-    
-    // Service option
     document.querySelectorAll('.service-option').forEach(opt => {
         opt.addEventListener('click', () => {
             document.querySelectorAll('.service-option').forEach(o => o.classList.remove('active'));
@@ -1137,21 +269,12 @@
         });
     });
     
-    function setDefaultDateTime() {
-        document.getElementById('ngayDi').value = new Date().toISOString().split('T')[0];
-        document.getElementById('gioDi').value = '08:00';
-    }
-    
-    document.getElementById('btnTraCuu')?.addEventListener('click', traCuuGia);
-    document.getElementById('btnDoiViTri')?.addEventListener('click', doiViTri);
-    document.getElementById('btnDatXe')?.addEventListener('click', datXe);
-    
-    window.receiveBooking = receiveBooking;
-    window.updateBookingStatus = updateBookingStatus;
+    document.getElementById('btnTraCuu').addEventListener('click', traCuuGia);
+    document.getElementById('btnDoiViTri').addEventListener('click', doiViTri);
+    document.getElementById('btnDatXe').addEventListener('click', datXe);
     
     loadDataFromSheet();
     setDefaultDateTime();
-    updateDriverUI();
 </script>
 </body>
 </html>
