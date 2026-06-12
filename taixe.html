@@ -103,9 +103,7 @@
     let allBookings = [];
     let currentTab = 'pending';
     let currentFilter = 'month';
-    let drivers = JSON.parse(localStorage.getItem('drivers') || '[]');
-    
-    function saveDrivers() { localStorage.setItem('drivers', JSON.stringify(drivers)); }
+    let statusCheckInterval = null;
     
     // ==================== GỌI API ====================
     async function callAPI(action, data = {}) {
@@ -123,54 +121,74 @@
         }
     }
     
-    // ==================== ĐĂNG KÝ ====================
+    // ==================== ĐĂNG KÝ (KHÔNG LƯU LOCALSTORAGE) ====================
     async function registerDriver(name, phone, plate, carType, password) {
         if(password.length < 6) return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
-        if(drivers.find(d => d.phone === phone)) return { success: false, message: "Số điện thoại đã đăng ký!" };
         
         const result = await callAPI("register", { name, phone, email: "", plate, carType, password });
         if(result.status === "success") {
-            const newDriver = { id: "DR"+Date.now(), name, phone, plate, carType, password: btoa(password), status: 'active' };
-            drivers.push(newDriver);
-            saveDrivers();
             return { success: true, message: result.message };
         }
         return { success: false, message: result.message };
     }
     
-    // ==================== ĐĂNG NHẬP ====================
+    // ==================== ĐĂNG NHẬP (GỌI API TRỰC TIẾP) ====================
     async function loginDriver(phone, password) {
-        const hashed = btoa(password);
-        const driver = drivers.find(d => d.phone === phone && d.password === hashed);
-        if(!driver) return { success: false, message: "Sai số điện thoại hoặc mật khẩu!" };
-        if(driver.status !== 'active') return { success: false, message: "Tài khoản đã bị khóa!" };
+        const result = await callAPI("login", { phone, password });
         
-        currentDriver = driver;
-        sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
-        return { success: true, message: "Đăng nhập thành công!", driver };
+        if(result.status === "success" && result.data) {
+            currentDriver = result.data;
+            sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
+            startStatusCheck();
+            return { success: true, message: result.message, driver: result.data };
+        }
+        return { success: false, message: result?.message || "Sai thông tin đăng nhập!" };
+    }
+    
+    // ==================== KIỂM TRA TRẠNG THÁI TÀI KHOẢN REAL-TIME ====================
+    async function checkDriverStatus() {
+        if (!currentDriver) return false;
+        
+        const result = await callAPI("login", { 
+            phone: currentDriver.phone, 
+            password: currentDriver.password 
+        });
+        
+        if (result.status !== "success" || result.data?.status !== "active") {
+            alert("Tài khoản của bạn đã bị khóa! Vui lòng liên hệ Admin.");
+            logoutDriver();
+            updateUI();
+            return false;
+        }
+        
+        if (result.data) {
+            currentDriver = result.data;
+            sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
+        }
+        return true;
     }
     
     // ==================== QUÊN MẬT KHẨU ====================
     async function resetPassword(phone, email) {
-        const driver = drivers.find(d => d.phone === phone);
-        if(!driver) return { success: false, message: "Không tìm thấy tài khoản!" };
-        const newPass = Math.random().toString(36).substring(2,8);
-        driver.password = btoa(newPass);
-        saveDrivers();
-        await callAPI("resetPassword", { phone, email, newPassword: newPass });
-        return { success: true, message: `Mật khẩu mới của bạn: ${newPass}` };
+        const result = await callAPI("resetPassword", { phone, email });
+        if(result.status === "success") {
+            return { success: true, message: result.message };
+        }
+        return { success: false, message: result?.message || "Không tìm thấy tài khoản!" };
     }
     
     // ==================== LẤY ĐƠN HÀNG TỪ SHEET ====================
     async function loadBookings() {
         if(!currentDriver) return;
         
+        const isValid = await checkDriverStatus();
+        if (!isValid) return;
+        
         const result = await callAPI("getBookings", {});
         if(result.status === "success" && result.data) {
             allBookings = result.data;
         }
         
-        // Đơn chờ nhận (pending và chưa có tài xế)
         const pending = allBookings.filter(b => b.status === 'pending' && (!b.driverPhone || b.driverPhone === ''));
         document.getElementById('bookingCount').innerText = pending.length + ' đơn';
         
@@ -191,7 +209,6 @@
             `).join('');
         }
         
-        // Đơn của tôi
         const my = allBookings.filter(b => b.driverPhone === currentDriver.phone);
         document.getElementById('myBookingCount').innerText = my.length + ' đơn';
         
@@ -217,6 +234,9 @@
     
     // ==================== NHẬN ĐƠN ====================
     async function receiveBooking(bookingId) {
+        const isValid = await checkDriverStatus();
+        if (!isValid) return;
+        
         const result = await callAPI("updateBookingStatus", { bookingId, newStatus: 'confirmed', driverPhone: currentDriver.phone });
         if(result.status === "success") {
             alert("✅ Nhận đơn thành công!");
@@ -228,6 +248,9 @@
     
     // ==================== HOÀN THÀNH ĐƠN ====================
     async function completeBooking(bookingId) {
+        const isValid = await checkDriverStatus();
+        if (!isValid) return;
+        
         const result = await callAPI("updateBookingStatus", { bookingId, newStatus: 'completed', driverPhone: currentDriver.phone });
         if(result.status === "success") {
             alert("✅ Hoàn thành đơn!");
@@ -248,7 +271,32 @@
         `).join('') : '<div style="text-align:center; padding:20px;">📭 Chưa có chuyến nào hoàn thành</div>';
     }
     
-    function logoutDriver() { currentDriver = null; sessionStorage.removeItem('currentDriver'); updateUI(); }
+    // ==================== KIỂM TRA ĐỊNH KỲ ====================
+    function startStatusCheck() {
+        if (statusCheckInterval) clearInterval(statusCheckInterval);
+        
+        statusCheckInterval = setInterval(async () => {
+            if (currentDriver) {
+                await checkDriverStatus();
+                updateUI();
+            }
+        }, 30000);
+    }
+    
+    function stopStatusCheck() {
+        if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+        }
+    }
+    
+    function logoutDriver() { 
+        stopStatusCheck();
+        currentDriver = null; 
+        sessionStorage.removeItem('currentDriver'); 
+        updateUI(); 
+    }
+    
     function updateUI() {
         const saved = sessionStorage.getItem('currentDriver');
         if(saved) {
@@ -258,6 +306,7 @@
             document.getElementById('driverName').innerText = currentDriver.name;
             document.getElementById('driverPhone').innerText = currentDriver.phone;
             loadBookings();
+            startStatusCheck();
         } else {
             document.getElementById('driverNotLogged').style.display = 'block';
             document.getElementById('driverLogged').style.display = 'none';
