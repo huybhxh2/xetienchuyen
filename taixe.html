@@ -199,9 +199,9 @@
     // ==================== CẤU HÌNH ====================
     const API_URL = "https://script.google.com/macros/s/AKfycbw186RsTclzHo9bjwLkBmvZz6p2YoQXBfX6GX8hZXXhq6cJ3KCcy-4wqzC62U11M1-x/exec";
     
-    // State - KHÔNG DÙNG LOCALSTORAGE CHO BOOKINGS
+    // State - KHÔNG DÙNG localStorage
     let currentDriver = null;
-    let allBookings = [];  // Sẽ tải từ API mỗi lần
+    let allBookings = [];
     let currentFilter = 'month';
     let currentTab = 'pending';
     
@@ -216,7 +216,7 @@
     const totalTripsSpan = document.getElementById('totalTrips');
     const totalRevenueSpan = document.getElementById('totalRevenue');
     
-    // ==================== GỌI API ====================
+    // ==================== HÀM GỌI API (DÙNG POST ĐỂ NHẬN RESPONSE) ====================
     async function callAPI(action, data = {}) {
         try {
             const response = await fetch(API_URL, {
@@ -233,24 +233,30 @@
         }
     }
     
-    // ==================== ĐĂNG KÝ ====================
+    // ==================== ĐĂNG KÝ (GỌI API) ====================
     async function registerDriver(name, phone, plate, carType, password) {
         if (password.length < 6) {
             return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
         }
-        const result = await callAPI("register", { name, phone, email: "", plate, carType, password });
+        
+        const result = await callAPI("register", { 
+            name, phone, email: "", plate, carType, password 
+        });
+        
         if (result.status === "success") {
             return { success: true, message: result.message };
         }
         return { success: false, message: result.message };
     }
     
-    // ==================== ĐĂNG NHẬP ====================
+    // ==================== ĐĂNG NHẬP (GỌI API) ====================
     async function loginDriver(phone, password) {
         const result = await callAPI("login", { phone, password });
+        
         if (result.status === "success" && result.data) {
             currentDriver = result.data;
-            localStorage.setItem('currentDriver', JSON.stringify(currentDriver));
+            // Chỉ lưu session, không lưu bookings
+            sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
             return { success: true, message: result.message, driver: result.data };
         }
         return { success: false, message: result.message };
@@ -262,12 +268,12 @@
         
         // Gọi API lấy tất cả đơn hàng từ Google Sheet
         const result = await callAPI("getBookings", {});
+        
         if (result.status === "success" && result.data) {
             allBookings = result.data;
         }
         
         console.log("📋 Tổng số đơn từ Sheet:", allBookings.length);
-        console.log("📋 Chi tiết đơn:", allBookings);
         
         // Đơn chờ nhận = pending VÀ chưa có tài xế
         const pendingBookings = allBookings.filter(b => b.status === 'pending' && (!b.driverPhone || b.driverPhone === ''));
@@ -320,37 +326,33 @@
         }
     }
     
-    // ==================== NHẬN ĐƠN ====================
+    // ==================== NHẬN ĐƠN (CẬP NHẬT SHEET) ====================
     async function receiveBooking(bookingId) {
         const result = await callAPI("updateBookingStatus", { 
             bookingId, 
             newStatus: 'confirmed', 
             driverPhone: currentDriver.phone 
         });
+        
         if (result.status === "success") {
             alert("✅ Bạn đã nhận đơn thành công!");
             await loadBookings();  // Tải lại dữ liệu mới từ Sheet
-            if (currentTab === 'pending') {
-                await loadBookings();
-            }
         } else {
             alert("❌ " + result.message);
         }
     }
     
-    // ==================== HOÀN THÀNH ĐƠN ====================
+    // ==================== HOÀN THÀNH ĐƠN (CẬP NHẬT SHEET) ====================
     async function completeBooking(bookingId) {
         const result = await callAPI("updateBookingStatus", { 
             bookingId, 
             newStatus: 'completed', 
             driverPhone: currentDriver.phone 
         });
+        
         if (result.status === "success") {
             alert("✅ Đã hoàn thành đơn hàng!");
             await loadBookings();
-            if (currentTab === 'my') {
-                await loadBookings();
-            }
             if (currentTab === 'history') {
                 calculateRevenue();
             }
@@ -415,7 +417,7 @@
         `).join('');
     }
     
-    // ==================== RESET PASSWORD ====================
+    // ==================== QUÊN MẬT KHẨU ====================
     async function resetPassword(phone, email) {
         const result = await callAPI("resetPassword", { phone, email });
         if (result.status === "success") {
@@ -426,26 +428,28 @@
     
     function logoutDriver() {
         currentDriver = null;
-        localStorage.removeItem('currentDriver');
+        sessionStorage.removeItem('currentDriver');
         updateDriverUI();
     }
     
-    // ==================== REFRESH ====================
     async function refreshBookings() {
         if (!currentDriver) return;
-        document.getElementById('bookingList').innerHTML = '<div style="text-align:center; padding:20px;">⏳ Đang tải lại...</div>';
+        bookingListDiv.innerHTML = '<div style="text-align:center; padding:20px;">⏳ Đang tải lại...</div>';
         await loadBookings();
     }
     
     // ==================== UI ====================
     function updateDriverUI() {
-        if (currentDriver) {
+        const savedDriver = sessionStorage.getItem('currentDriver');
+        if (savedDriver) {
+            currentDriver = JSON.parse(savedDriver);
             document.getElementById('driverNotLogged').style.display = 'none';
             document.getElementById('driverLogged').style.display = 'block';
             driverNameSpan.innerText = currentDriver.name;
             driverPhoneSpan.innerText = currentDriver.phone;
             loadBookings();
         } else {
+            currentDriver = null;
             document.getElementById('driverNotLogged').style.display = 'block';
             document.getElementById('driverLogged').style.display = 'none';
         }
@@ -545,7 +549,7 @@
     document.getElementById('tabMyBookings').onclick = () => switchTab('my');
     document.getElementById('tabHistory').onclick = () => switchTab('history');
     
-    // Filter
+    // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -561,13 +565,7 @@
     window.refreshBookings = refreshBookings;
     
     // Khởi tạo
-    const savedDriver = localStorage.getItem('currentDriver');
-    if (savedDriver) {
-        currentDriver = JSON.parse(savedDriver);
-        updateDriverUI();
-    } else {
-        updateDriverUI();
-    }
+    updateDriverUI();
 </script>
 </body>
 </html>
