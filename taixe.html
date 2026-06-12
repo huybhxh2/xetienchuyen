@@ -23,6 +23,7 @@
     .btn-primary { background: #0066cc; color: white; }
     .btn-secondary { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
     .btn-danger { background: #ef4444; color: white; }
+    .btn-success { background: #10b981; color: white; }
     .driver-info { background: #f0f7ff; border-radius: 16px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .driver-avatar { width: 50px; height: 50px; background: #0066cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
     .driver-details { flex: 1; }
@@ -33,28 +34,38 @@
     .status-pending { background: #fef3c7; color: #92400e; }
     .status-confirmed { background: #d1fae5; color: #065f46; }
     .status-completed { background: #e0e7ff; color: #3730a3; }
-    .booking-route { font-weight: 600; margin-bottom: 8px; }
-    .booking-info { font-size: 0.75rem; color: #6b7a8a; margin-bottom: 4px; }
+    .booking-route { font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+    .booking-info { font-size: 0.75rem; color: #6b7a8a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .booking-actions { display: flex; gap: 8px; margin-top: 12px; }
     .booking-actions button { flex: 1; padding: 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: none; cursor: pointer; }
     .btn-confirm { background: #10b981; color: white; }
     .btn-complete { background: #3b82f6; color: white; }
+    .call-link { color: #0066cc; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
     .toast-message { margin-top: 16px; padding: 12px 16px; border-radius: 14px; text-align: center; font-weight: 500; font-size: 0.8rem; animation: slideIn 0.3s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     .toast-success { background: #d1fae5; color: #065f46; }
     .toast-error { background: #fee2e2; color: #991b1b; }
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex; }
-    .modal-content { background: white; border-radius: 28px; max-width: 400px; width: 100%; overflow: hidden; }
+    .modal-content { background: white; border-radius: 28px; max-width: 400px; width: 100%; overflow: hidden; max-height: 90vh; overflow-y: auto; }
     .modal-header { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); padding: 20px; color: white; text-align: center; }
     .modal-body { padding: 24px; }
     .modal-footer { padding: 16px 20px; border-top: 1px solid #eef2f6; display: flex; gap: 12px; }
     .link-text { color: #0066cc; text-align: center; margin-top: 12px; cursor: pointer; font-size: 0.8rem; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .driver-subtabs { display: flex; gap: 10px; margin: 16px 0; }
     .driver-subtab { flex: 1; padding: 10px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .driver-subtab.active { background: #0066cc; color: white; }
     .driver-subtab.inactive { background: #e2e8f0; color: #1e293b; }
+    .stats-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+    .stats-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eef2f6; }
+    .stats-row:last-child { border-bottom: none; }
+    .stats-label { font-weight: 600; color: #5a6874; }
+    .stats-value { font-weight: 700; color: #0066cc; font-size: 1.1rem; }
+    .history-date { font-weight: 600; margin-top: 16px; margin-bottom: 8px; padding: 8px; background: #f0f7ff; border-radius: 12px; }
+    .filter-buttons { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-btn { padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; background: #e2e8f0; border: none; }
+    .filter-btn.active { background: #0066cc; color: white; }
 </style>
 </head>
 <body>
@@ -89,13 +100,49 @@
             <div class="driver-subtabs">
                 <button id="tabPending" class="driver-subtab active">📋 Đơn chờ nhận</button>
                 <button id="tabMyBookings" class="driver-subtab inactive">✅ Đơn của tôi</button>
+                <button id="tabHistory" class="driver-subtab inactive">📜 Lịch sử & Thu nhập</button>
             </div>
             
-            <div class="flex-between" style="margin-bottom: 16px;">
-                <h4 id="sectionTitle">📋 Danh sách đơn chờ nhận</h4>
-                <span id="bookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px; font-size:0.7rem;">0 đơn</span>
+            <!-- Tab Đơn chờ nhận -->
+            <div id="pendingPanel">
+                <div class="flex-between" style="margin-bottom: 16px;">
+                    <h4>📋 Danh sách đơn chờ nhận</h4>
+                    <span id="bookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px; font-size:0.7rem;">0 đơn</span>
+                </div>
+                <div id="bookingList"></div>
             </div>
-            <div id="bookingList"></div>
+            
+            <!-- Tab Đơn của tôi -->
+            <div id="myBookingsPanel" style="display: none;">
+                <div class="flex-between" style="margin-bottom: 16px;">
+                    <h4>✅ Đơn đã nhận</h4>
+                    <span id="myBookingCount" style="background:#e2e8f0; padding:2px 8px; border-radius:20px; font-size:0.7rem;">0 đơn</span>
+                </div>
+                <div id="myBookingList"></div>
+            </div>
+            
+            <!-- Tab Lịch sử & Thu nhập -->
+            <div id="historyPanel" style="display: none;">
+                <div class="stats-card">
+                    <h4 style="margin-bottom: 12px;">💰 Tổng thu nhập</h4>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="day">Hôm nay</button>
+                        <button class="filter-btn" data-filter="week">Tuần này</button>
+                        <button class="filter-btn" data-filter="month">Tháng này</button>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Số chuyến:</span>
+                        <span class="stats-value" id="totalTrips">0</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Tổng thu:</span>
+                        <span class="stats-value" id="totalRevenue">0đ</span>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 16px 0 12px;">📜 Lịch sử các chuyến đã chạy</h4>
+                <div id="historyList"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -159,14 +206,19 @@
     let currentDriver = JSON.parse(localStorage.getItem('currentDriver') || 'null');
     let drivers = JSON.parse(localStorage.getItem('drivers') || '[]');
     let allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    let currentDriverTab = 'pending'; // 'pending' hoặc 'my'
+    let currentDriverTab = 'pending';
+    let currentFilter = 'month'; // day, week, month
     
     // DOM elements
     const driverNameSpan = document.getElementById('driverName');
     const driverPhoneSpan = document.getElementById('driverPhone');
     const bookingListDiv = document.getElementById('bookingList');
+    const myBookingListDiv = document.getElementById('myBookingList');
     const bookingCountSpan = document.getElementById('bookingCount');
-    const sectionTitle = document.getElementById('sectionTitle');
+    const myBookingCountSpan = document.getElementById('myBookingCount');
+    const historyListDiv = document.getElementById('historyList');
+    const totalTripsSpan = document.getElementById('totalTrips');
+    const totalRevenueSpan = document.getElementById('totalRevenue');
     
     // Helper functions
     function saveDrivers() { localStorage.setItem('drivers', JSON.stringify(drivers)); }
@@ -248,7 +300,7 @@
                 driverPhone: currentDriver.phone 
             });
             alert("✅ Bạn đã nhận đơn thành công!");
-            loadDriverBookings();
+            loadAllData();
         }
     }
     
@@ -263,7 +315,7 @@
                 driverPhone: currentDriver.phone 
             });
             alert("✅ Đã hoàn thành đơn hàng!");
-            loadDriverBookings();
+            loadAllData();
         }
     }
     
@@ -272,40 +324,133 @@
         return map[status] || status;
     }
     
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    }
+    
     // Tải danh sách đơn hàng
-    function loadDriverBookings() {
+    function loadPendingBookings() {
         if (!currentDriver) return;
+        const pendingBookings = allBookings.filter(b => b.status === 'pending' && !b.driverPhone);
+        bookingCountSpan.innerText = pendingBookings.length + ' đơn';
         
-        let filteredBookings = [];
-        if (currentDriverTab === 'pending') {
-            filteredBookings = allBookings.filter(b => b.status === 'pending' && !b.driverPhone);
-        } else {
-            filteredBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
-        }
-        
-        bookingCountSpan.innerText = filteredBookings.length + ' đơn';
-        sectionTitle.innerHTML = currentDriverTab === 'pending' ? '📋 Danh sách đơn chờ nhận' : '✅ Đơn đã nhận';
-        
-        if (filteredBookings.length === 0) {
+        if (pendingBookings.length === 0) {
             bookingListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Không có đơn hàng nào</div>';
             return;
         }
         
-        bookingListDiv.innerHTML = filteredBookings.map((booking, idx) => {
+        bookingListDiv.innerHTML = pendingBookings.map((booking, idx) => {
             const actualIndex = allBookings.findIndex(b => b.id === booking.id);
             return `
             <div class="booking-item">
                 <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
                 <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
-                <div class="booking-info">👤 ${booking.hoTen} | 📞 ${booking.sdt}</div>
+                <div class="booking-info">
+                    <span>👤 ${booking.hoTen}</span>
+                    <a href="tel:${booking.sdt}" class="call-link">📞 ${booking.sdt}</a>
+                </div>
                 <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
                 <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
                 <div class="booking-actions">
-                    ${currentDriverTab === 'pending' ? `<button class="btn-confirm" onclick="receiveBooking(${actualIndex})">✅ Nhận đơn</button>` : ''}
-                    ${currentDriverTab === 'my' && booking.status === 'confirmed' ? `<button class="btn-complete" onclick="completeBooking(${actualIndex})">✅ Hoàn thành</button>` : ''}
+                    <button class="btn-confirm" onclick="receiveBooking(${actualIndex})">✅ Nhận đơn</button>
                 </div>
             </div>`;
         }).join('');
+    }
+    
+    function loadMyBookings() {
+        if (!currentDriver) return;
+        const myBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
+        myBookingCountSpan.innerText = myBookings.length + ' đơn';
+        
+        if (myBookings.length === 0) {
+            myBookingListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Bạn chưa nhận đơn nào</div>';
+            return;
+        }
+        
+        myBookingListDiv.innerHTML = myBookings.map((booking, idx) => {
+            const actualIndex = allBookings.findIndex(b => b.id === booking.id);
+            return `
+            <div class="booking-item">
+                <span class="booking-status status-${booking.status}">${getStatusText(booking.status)}</span>
+                <div class="booking-route">${booking.diemDi} → ${booking.diemDen}</div>
+                <div class="booking-info">
+                    <span>👤 ${booking.hoTen}</span>
+                    <a href="tel:${booking.sdt}" class="call-link">📞 ${booking.sdt}</a>
+                </div>
+                <div class="booking-info">📅 ${booking.ngayDi} ${booking.gioDi} | ${booking.loaiXe}</div>
+                <div class="booking-info">💰 ${Number(booking.giaTri).toLocaleString('vi-VN')}đ</div>
+                <div class="booking-actions">
+                    ${booking.status === 'confirmed' ? `<button class="btn-complete" onclick="completeBooking(${actualIndex})">✅ Hoàn thành</button>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    }
+    
+    // Tính thu nhập
+    function calculateRevenue() {
+        if (!currentDriver) return;
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        const completedBookings = allBookings.filter(b => 
+            b.driverPhone === currentDriver.phone && 
+            b.status === 'completed'
+        );
+        
+        let filtered = [];
+        if (currentFilter === 'day') {
+            filtered = completedBookings.filter(b => new Date(b.timestamp) >= today);
+        } else if (currentFilter === 'week') {
+            filtered = completedBookings.filter(b => new Date(b.timestamp) >= startOfWeek);
+        } else {
+            filtered = completedBookings.filter(b => new Date(b.timestamp) >= startOfMonth);
+        }
+        
+        const totalTrips = filtered.length;
+        const totalRevenue = filtered.reduce((sum, b) => sum + Number(b.giaTri), 0);
+        
+        totalTripsSpan.innerText = totalTrips;
+        totalRevenueSpan.innerText = totalRevenue.toLocaleString('vi-VN') + 'đ';
+        
+        // Lịch sử theo ngày
+        const groupedByDate = {};
+        filtered.forEach(b => {
+            const date = formatDate(b.timestamp);
+            if (!groupedByDate[date]) groupedByDate[date] = [];
+            groupedByDate[date].push(b);
+        });
+        
+        const sortedDates = Object.keys(groupedByDate).sort((a,b) => new Date(b) - new Date(a));
+        
+        if (sortedDates.length === 0) {
+            historyListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#8a99a8;">📭 Chưa có chuyến nào hoàn thành</div>';
+            return;
+        }
+        
+        historyListDiv.innerHTML = sortedDates.map(date => `
+            <div class="history-date">📅 ${date}</div>
+            ${groupedByDate[date].map(b => `
+                <div class="booking-item" style="margin-bottom: 8px;">
+                    <div class="booking-route">${b.diemDi} → ${b.diemDen}</div>
+                    <div class="booking-info">👤 ${b.hoTen} | ${b.loaiXe}</div>
+                    <div class="booking-info">💰 ${Number(b.giaTri).toLocaleString('vi-VN')}đ</div>
+                </div>
+            `).join('')}
+        `).join('');
+    }
+    
+    function loadAllData() {
+        loadPendingBookings();
+        loadMyBookings();
+        if (currentDriverTab === 'history') {
+            calculateRevenue();
+        }
     }
     
     // Cập nhật UI
@@ -315,10 +460,28 @@
             document.getElementById('driverLogged').style.display = 'block';
             driverNameSpan.innerText = currentDriver.name;
             driverPhoneSpan.innerText = currentDriver.phone;
-            loadDriverBookings();
+            loadAllData();
         } else {
             document.getElementById('driverNotLogged').style.display = 'block';
             document.getElementById('driverLogged').style.display = 'none';
+        }
+    }
+    
+    // Switch tab
+    function switchTab(tab) {
+        currentDriverTab = tab;
+        document.getElementById('pendingPanel').style.display = tab === 'pending' ? 'block' : 'none';
+        document.getElementById('myBookingsPanel').style.display = tab === 'my' ? 'block' : 'none';
+        document.getElementById('historyPanel').style.display = tab === 'history' ? 'block' : 'none';
+        
+        document.getElementById('tabPending').className = tab === 'pending' ? 'driver-subtab active' : 'driver-subtab inactive';
+        document.getElementById('tabMyBookings').className = tab === 'my' ? 'driver-subtab active' : 'driver-subtab inactive';
+        document.getElementById('tabHistory').className = tab === 'history' ? 'driver-subtab active' : 'driver-subtab inactive';
+        
+        if (tab === 'history') {
+            calculateRevenue();
+        } else {
+            loadAllData();
         }
     }
     
@@ -397,19 +560,19 @@
     };
     
     // Tab
-    document.getElementById('tabPending').onclick = () => {
-        currentDriverTab = 'pending';
-        document.getElementById('tabPending').className = 'driver-subtab active';
-        document.getElementById('tabMyBookings').className = 'driver-subtab inactive';
-        loadDriverBookings();
-    };
+    document.getElementById('tabPending').onclick = () => switchTab('pending');
+    document.getElementById('tabMyBookings').onclick = () => switchTab('my');
+    document.getElementById('tabHistory').onclick = () => switchTab('history');
     
-    document.getElementById('tabMyBookings').onclick = () => {
-        currentDriverTab = 'my';
-        document.getElementById('tabMyBookings').className = 'driver-subtab active';
-        document.getElementById('tabPending').className = 'driver-subtab inactive';
-        loadDriverBookings();
-    };
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.getAttribute('data-filter');
+            calculateRevenue();
+        });
+    });
     
     // Global functions
     window.receiveBooking = receiveBooking;
