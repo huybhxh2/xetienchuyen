@@ -202,17 +202,34 @@
     let currentTab = 'pending';
     let currentFilter = 'month';
     
-    // ==================== GỌI API (DÙNG JSONP ĐỂ TRÁNH CORS) ====================
+    // DOM elements
+    const driverNameSpan = document.getElementById('driverName');
+    const driverPhoneSpan = document.getElementById('driverPhone');
+    const bookingListDiv = document.getElementById('bookingList');
+    const myBookingListDiv = document.getElementById('myBookingList');
+    const bookingCountSpan = document.getElementById('bookingCount');
+    const myBookingCountSpan = document.getElementById('myBookingCount');
+    const historyListDiv = document.getElementById('historyList');
+    const totalTripsSpan = document.getElementById('totalTrips');
+    const totalRevenueSpan = document.getElementById('totalRevenue');
+    
+    // ==================== GỌI API DÙNG JSONP (KHÔNG CORS) ====================
     function callAPI(action, data, callback) {
-        const callbackName = 'callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const callbackName = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const params = new URLSearchParams();
         params.append('action', action);
         params.append('callback', callbackName);
-        params.append('data', JSON.stringify(data));
+        
+        // Thêm từng tham số data vào URL
+        for (let key in data) {
+            if (data.hasOwnProperty(key)) {
+                params.append(key, JSON.stringify(data[key]));
+            }
+        }
         
         window[callbackName] = function(response) {
             delete window[callbackName];
-            document.body.removeChild(script);
+            if (script.parentNode) script.parentNode.removeChild(script);
             if (callback) callback(response);
         };
         
@@ -221,10 +238,11 @@
         script.src = url;
         document.body.appendChild(script);
         
+        // Timeout sau 10 giây
         setTimeout(() => {
             if (window[callbackName]) {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if (script.parentNode) script.parentNode.removeChild(script);
                 if (callback) callback({ status: "error", message: "Timeout" });
             }
         }, 10000);
@@ -280,6 +298,7 @@
                 allBookings = [];
             }
             
+            // Đơn chờ nhận
             const pendingBookings = allBookings.filter(b => b.status === 'pending' && (!b.driverPhone || b.driverPhone === ''));
             bookingCountSpan.innerText = pendingBookings.length + ' đơn';
             
@@ -303,6 +322,7 @@
                 `).join('');
             }
             
+            // Đơn của tôi
             const myBookings = allBookings.filter(b => b.driverPhone === currentDriver.phone);
             myBookingCountSpan.innerText = myBookings.length + ' đơn';
             
@@ -431,6 +451,7 @@
     function showModal(modal) { if(modal) modal.classList.add('active'); }
     function hideModal(modal) { if(modal) modal.classList.remove('active'); }
     
+    // Đăng nhập
     document.getElementById('openLoginBtn').onclick = () => showModal(modals.login);
     document.getElementById('closeLoginModal').onclick = () => hideModal(modals.login);
     document.getElementById('confirmLoginBtn').onclick = () => {
@@ -447,6 +468,7 @@
         });
     };
     
+    // Đăng ký
     document.getElementById('openRegisterBtn').onclick = () => showModal(modals.register);
     document.getElementById('closeRegisterModal').onclick = () => hideModal(modals.register);
     document.getElementById('confirmRegisterBtn').onclick = () => {
@@ -473,6 +495,7 @@
         });
     };
     
+    // Quên mật khẩu
     document.getElementById('forgotLink').onclick = () => {
         hideModal(modals.login);
         showModal(modals.forgot);
@@ -487,15 +510,18 @@
         });
     };
     
+    // Đăng xuất
     document.getElementById('logoutBtn').onclick = () => {
         logoutDriver();
         updateDriverUI();
     };
     
+    // Tab
     document.getElementById('tabPending').onclick = () => switchTab('pending');
     document.getElementById('tabMyBookings').onclick = () => switchTab('my');
     document.getElementById('tabHistory').onclick = () => switchTab('history');
     
+    // Filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -505,9 +531,11 @@
         });
     });
     
+    // Global
     window.receiveBooking = receiveBooking;
     window.completeBooking = completeBooking;
     
+    // Khởi tạo
     updateDriverUI();
 </script>
 </body>
