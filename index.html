@@ -98,10 +98,7 @@
             <div class="input-wrapper"><span class="input-icon">📞</span><input type="tel" id="sdt" placeholder="0912 345 678"></div>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">EMAIL</label>
-            <div class="input-wrapper"><span class="input-icon">📧</span><input type="email" id="email" placeholder="example@gmail.com"></div>
-        </div>
+        <!-- ĐÃ XÓA Ô EMAIL -->
 
         <div class="form-row">
             <div class="form-group"><label class="form-label">NGÀY ĐI</label><input type="date" id="ngayDi"></div>
@@ -227,15 +224,20 @@
     function datXe() {
         const hoTen = document.getElementById('hoTen').value.trim();
         const sdt = document.getElementById('sdt').value.trim();
-        const email = document.getElementById('email').value.trim();
         const ngayDi = document.getElementById('ngayDi').value;
         const gioDi = document.getElementById('gioDi').value;
         const diemDi = diemDiInput.value.trim();
         const diemDen = diemDenInput.value.trim();
         const loaiXe = document.querySelector('input[name="loaiXe"]:checked').value;
         
-        if (!hoTen || !sdt || !ngayDi || !gioDi) { alert("Nhập đủ thông tin"); return; }
-        if (!window.lastRoute) { alert("Tra cứu giá trước khi đặt"); return; }
+        if (!hoTen || !sdt || !ngayDi || !gioDi) { 
+            alert("Vui lòng nhập đầy đủ: Họ tên, Số điện thoại, Ngày đi, Giờ đi"); 
+            return; 
+        }
+        if (!window.lastRoute) { 
+            alert("Vui lòng tra cứu giá trước khi đặt"); 
+            return; 
+        }
         
         const loaiXeText = loaiXe === "tien_chuyen" ? "Tiện chuyến" : "Bao xe";
         const giaTri = loaiXe === "tien_chuyen" ? window.lastRoute.giaTienChuyen : window.lastRoute.giaBaoXe;
@@ -244,7 +246,8 @@
         
         thongBaoDiv.innerHTML = '<div class="toast-message toast-loading">⏳ Đang xử lý...</div>';
         
-        const url = `${API_URL}?action=createBooking&hoTen=${encodeURIComponent(hoTen)}&sdt=${encodeURIComponent(sdt)}&email=${encodeURIComponent(email)}&diemDi=${encodeURIComponent(diemDi)}&diemDen=${encodeURIComponent(diemDen)}&ngayDi=${encodeURIComponent(ngayDi)}&gioDi=${encodeURIComponent(gioDi)}&loaiXe=${encodeURIComponent(loaiXeText)}&giaTri=${giaTri}`;
+        // email để trống
+        const url = `${API_URL}?action=createBooking&hoTen=${encodeURIComponent(hoTen)}&sdt=${encodeURIComponent(sdt)}&email=&diemDi=${encodeURIComponent(diemDi)}&diemDen=${encodeURIComponent(diemDen)}&ngayDi=${encodeURIComponent(ngayDi)}&gioDi=${encodeURIComponent(gioDi)}&loaiXe=${encodeURIComponent(loaiXeText)}&giaTri=${giaTri}`;
         
         fetch(url, { method: 'GET', mode: 'no-cors' }).catch(e => console.log(e));
         new Image().src = url;
@@ -252,7 +255,6 @@
         thongBaoDiv.innerHTML = '<div class="toast-message toast-success">✅ Đặt xe thành công!</div>';
         document.getElementById('hoTen').value = '';
         document.getElementById('sdt').value = '';
-        document.getElementById('email').value = '';
         setTimeout(() => thongBaoDiv.innerHTML = '', 3000);
     }
     
