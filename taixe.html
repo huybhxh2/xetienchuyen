@@ -199,7 +199,7 @@
     // ==================== CẤU HÌNH ====================
     const API_URL = "https://script.google.com/macros/s/AKfycbw186RsTclzHo9bjwLkBmvZz6p2YoQXBfX6GX8hZXXhq6cJ3KCcy-4wqzC62U11M1-x/exec";
     
-    // State - KHÔNG DÙNG localStorage
+    // State
     let currentDriver = null;
     let allBookings = [];
     let currentFilter = 'month';
@@ -216,14 +216,22 @@
     const totalTripsSpan = document.getElementById('totalTrips');
     const totalRevenueSpan = document.getElementById('totalRevenue');
     
-    // ==================== HÀM GỌI API (DÙNG POST ĐỂ NHẬN RESPONSE) ====================
+    // ==================== HÀM GỌI API (DÙNG POST) ====================
     async function callAPI(action, data = {}) {
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                mode: 'cors',
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ action, ...data })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const result = await response.json();
             console.log(`API ${action}:`, result);
             return result;
@@ -233,7 +241,7 @@
         }
     }
     
-    // ==================== ĐĂNG KÝ (GỌI API) ====================
+    // ==================== ĐĂNG KÝ ====================
     async function registerDriver(name, phone, plate, carType, password) {
         if (password.length < 6) {
             return { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự!" };
@@ -243,41 +251,49 @@
             name, phone, email: "", plate, carType, password 
         });
         
-        if (result.status === "success") {
+        if (result && result.status === "success") {
             return { success: true, message: result.message };
         }
-        return { success: false, message: result.message };
+        return { success: false, message: result?.message || "Lỗi kết nối!" };
     }
     
-    // ==================== ĐĂNG NHẬP (GỌI API) ====================
+    // ==================== ĐĂNG NHẬP ====================
     async function loginDriver(phone, password) {
         const result = await callAPI("login", { phone, password });
         
-        if (result.status === "success" && result.data) {
+        if (result && result.status === "success" && result.data) {
             currentDriver = result.data;
-            // Chỉ lưu session, không lưu bookings
             sessionStorage.setItem('currentDriver', JSON.stringify(currentDriver));
             return { success: true, message: result.message, driver: result.data };
         }
-        return { success: false, message: result.message };
+        return { success: false, message: result?.message || "Sai thông tin đăng nhập!" };
     }
     
-    // ==================== LẤY ĐƠN HÀNG TỪ SHEET ====================
+    // ==================== QUÊN MẬT KHẨU ====================
+    async function resetPassword(phone, email) {
+        const result = await callAPI("resetPassword", { phone, email });
+        if (result && result.status === "success") {
+            return { success: true, message: result.message };
+        }
+        return { success: false, message: result?.message || "Không tìm thấy tài khoản!" };
+    }
+    
+    // ==================== LẤY ĐƠN HÀNG ====================
     async function loadBookings() {
         if (!currentDriver) return;
         
-        // Gọi API lấy tất cả đơn hàng từ Google Sheet
         const result = await callAPI("getBookings", {});
         
-        if (result.status === "success" && result.data) {
+        if (result && result.status === "success" && result.data) {
             allBookings = result.data;
+        } else {
+            allBookings = [];
         }
         
         console.log("📋 Tổng số đơn từ Sheet:", allBookings.length);
         
         // Đơn chờ nhận = pending VÀ chưa có tài xế
         const pendingBookings = allBookings.filter(b => b.status === 'pending' && (!b.driverPhone || b.driverPhone === ''));
-        console.log("✅ Đơn chờ nhận:", pendingBookings.length);
         
         bookingCountSpan.innerText = pendingBookings.length + ' đơn';
         
@@ -326,7 +342,7 @@
         }
     }
     
-    // ==================== NHẬN ĐƠN (CẬP NHẬT SHEET) ====================
+    // ==================== NHẬN ĐƠN ====================
     async function receiveBooking(bookingId) {
         const result = await callAPI("updateBookingStatus", { 
             bookingId, 
@@ -334,15 +350,15 @@
             driverPhone: currentDriver.phone 
         });
         
-        if (result.status === "success") {
+        if (result && result.status === "success") {
             alert("✅ Bạn đã nhận đơn thành công!");
-            await loadBookings();  // Tải lại dữ liệu mới từ Sheet
+            await loadBookings();
         } else {
-            alert("❌ " + result.message);
+            alert("❌ " + (result?.message || "Lỗi!"));
         }
     }
     
-    // ==================== HOÀN THÀNH ĐƠN (CẬP NHẬT SHEET) ====================
+    // ==================== HOÀN THÀNH ĐƠN ====================
     async function completeBooking(bookingId) {
         const result = await callAPI("updateBookingStatus", { 
             bookingId, 
@@ -350,14 +366,14 @@
             driverPhone: currentDriver.phone 
         });
         
-        if (result.status === "success") {
+        if (result && result.status === "success") {
             alert("✅ Đã hoàn thành đơn hàng!");
             await loadBookings();
             if (currentTab === 'history') {
                 calculateRevenue();
             }
         } else {
-            alert("❌ " + result.message);
+            alert("❌ " + (result?.message || "Lỗi!"));
         }
     }
     
@@ -415,15 +431,6 @@
                 </div>
             `).join('')}
         `).join('');
-    }
-    
-    // ==================== QUÊN MẬT KHẨU ====================
-    async function resetPassword(phone, email) {
-        const result = await callAPI("resetPassword", { phone, email });
-        if (result.status === "success") {
-            return { success: true, message: result.message };
-        }
-        return { success: false, message: result.message };
     }
     
     function logoutDriver() {
